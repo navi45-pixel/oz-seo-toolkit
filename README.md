@@ -85,11 +85,15 @@ different URL instead of the freshly deployed one). CI runs the same
 - The backlink directory persists in a **KV namespace** (`BACKLINKS`, id
   `2b4845a99d4f43729bdc6df50a1fd440`) — the whole directory is one JSON array
   under the key `backlinks`. Same validation, dedupe and response shapes as Node.
-- To (re)seed the directory from the Node data file:
+- To (re)seed or sync the directory from the Node data file:
   ```bash
-  npx wrangler kv key put backlinks --path data/backlinks.json \
-    --namespace-id 2b4845a99d4f43729bdc6df50a1fd440 --remote   # --remote is required in wrangler 4
+  npm run sync:kv             # push data/backlinks.json → KV, verify read-back
+  npm run sync:kv -- --check  # verify only (exit 1 if remote differs)
   ```
+  The script reads the namespace id from `wrangler.toml` and always uses
+  `--remote` (wrangler 4 defaults KV commands to *local* storage — the
+  classic silent no-op). Verification is an authoritative read-back via the
+  KV API, not the edge cache; edge readers can still lag ~60s afterwards.
 - Deterministic checks (HTML parsing, schema, hreflang, robots, links, speed probe)
   produce the **same results** on Workers and Node.
 - Runtime-bound checks (raw DNS lookups, TLS certificate inspection) are not
