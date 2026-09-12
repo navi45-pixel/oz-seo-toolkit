@@ -1,16 +1,20 @@
-'use strict';
 /*
  * Cloudflare Workers entry — same audit engine as the Node server.
  * Deterministic checks (HTML parsing, schema, hreflang, robots, links…) give
  * IDENTICAL results to the Node version. Runtime-bound checks (raw DNS, TLS
  * cert inspection) degrade gracefully to "info" on Workers.
  * Deploy: npx wrangler deploy
+ *
+ * ES Module format (export default) — required so wrangler bundles the Node
+ * built-ins used by the engine (dns/tls via nodejs_compat) instead of failing
+ * with "Unexpected external import … assumed to be a Service Worker format".
+ * The lib/ files stay CommonJS; the bundler interops them automatically.
  */
-const { runAudit } = require('./lib/audit');
-const { runSpeedTest } = require('./lib/speed');
-const { probePerformance } = require('./lib/perfprobe');
+import { runAudit } from './lib/audit.js';
+import { runSpeedTest } from './lib/speed.js';
+import { probePerformance } from './lib/perfprobe.js';
 
-module.exports = {
+export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const json = (obj, status = 200) =>

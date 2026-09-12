@@ -14,3 +14,4 @@ data/snapshots.json
 *.local.json
 backlinks.json
 .local-backup/
+dist/

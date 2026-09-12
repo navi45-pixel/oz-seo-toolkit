@@ -66,6 +66,11 @@ jobs:
         if: always()
         run: npm stop
 
+      # Bundle-check the Workers entry so a format/import regression fails CI
+      # here instead of breaking the Cloudflare deploy workflow.
+      - name: Wrangler dry-run build (Workers bundle check)
+        run: npx -y wrangler deploy --dry-run --outdir=dist
+
       - name: Upload server log on failure
         if: failure()
         uses: actions/upload-artifact@v4
