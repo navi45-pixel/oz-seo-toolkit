@@ -3,6 +3,12 @@ main = "worker.js"
 compatibility_date = "2025-09-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Persistent storage for the backlink directory (mirrors data/backlinks.json
+# on the Node server: one JSON array under the key "backlinks").
+[[kv_namespaces]]
+binding = "BACKLINKS"
+id = "2b4845a99d4f43729bdc6df50a1fd440"
+
 [assets]
 directory = "./public"
 binding = "ASSETS"

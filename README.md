@@ -54,7 +54,7 @@ Use `PORT=8080 npm start` to run on a different port; check `server.log` if anyt
 
 `npm stop` stops the server again — it finds whatever is listening on the port (with the same `PORT` env override), tries a graceful close first, then force-kills if needed. `start.sh` uses the same logic (`stop.sh` holds the shared helpers) to take over a port left busy by a stale instance.
 
-`npm run smoke` runs the smoke tests (`scripts/smoke.js`, dependency-free) against a running instance — defaults to `http://localhost:3000`, or pass any URL: `npm run smoke -- https://<worker>.workers.dev`.
+`npm run smoke` runs the smoke tests (`scripts/smoke.js`, dependency-free) against a running instance — defaults to `http://localhost:3000`, or pass any URL: `npm run smoke -- https://<worker>.workers.dev`. The checks: `/api/health`, a real audit, the backlink directory shape, and every page returning 200.
 
 ## Deploy to Cloudflare Workers
 The same audit engine runs on Cloudflare (`worker.js` + `wrangler.toml`).
@@ -80,15 +80,26 @@ URL from wrangler's output, then runs the shared smoke tests against it
 (`--no-smoke` to skip; `BASE_URL=https://... npm run deploy` smoke-tests a
 different URL instead of the freshly deployed one). CI runs the same
 `scripts/smoke.js`, so local, CI, and post-deploy checks cannot drift.
-- Pages (`/`, `/backlinks`, `/skills`) are served from `public/` as Static Assets.
+- Pages (`/`, `/backlinks`, `/skills`, `/api`) are served from `public/` as Static Assets.
 - `/api/audit`, `/api/perf`, `/api/speed`, `/api/health` run the identical engine.
+- The backlink directory persists in a **KV namespace** (`BACKLINKS`, id
+  `2b4845a99d4f43729bdc6df50a1fd440`) — the whole directory is one JSON array
+  under the key `backlinks`. Same validation, dedupe and response shapes as Node.
+- To (re)seed the directory from the Node data file:
+  ```bash
+  npx wrangler kv key put backlinks --path data/backlinks.json \
+    --namespace-id 2b4845a99d4f43729bdc6df50a1fd440 --remote   # --remote is required in wrangler 4
+  ```
 - Deterministic checks (HTML parsing, schema, hreflang, robots, links, speed probe)
   produce the **same results** on Workers and Node.
 - Runtime-bound checks (raw DNS lookups, TLS certificate inspection) are not
   available in the Workers sandbox — they degrade to an "info" note there.
   For 100% identical reports, host the Node version (optionally behind the
   Cloudflare proxy) or accept the two info-level differences.
-- The backlink directory needs storage; on Workers bind a KV or keep it on Node.
+- KV is eventually consistent: a fresh listing can take up to ~60s to appear
+  for readers on other edges (the writing edge sees it immediately).
+- Without the `BACKLINKS` KV binding, directory endpoints return a
+  descriptive 501 JSON error; audits always work.
 
 ## Skills Hub — 25 integrated skill modules
 All 25 SEO skill modules from the knowledge base are surfaced on `/skills`:

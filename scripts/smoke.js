@@ -61,7 +61,17 @@ async function main() {
     report(`GET /api/audit?url=${AUDIT_URL}`, false, e.message);
   }
 
-  // 3. Pages
+  // 3. Backlink directory (shape check — never mutates data)
+  try {
+    const { status, json } = await getJson('/api/backlinks', 20_000);
+    const shapeOk = json && typeof json.total === 'number' && Array.isArray(json.listings);
+    report('GET /api/backlinks', status === 200 && shapeOk,
+      shapeOk ? `total ${json.total}` : `status ${status}, unexpected shape`);
+  } catch (e) {
+    report('GET /api/backlinks', false, e.message);
+  }
+
+  // 4. Pages
   for (const p of ['/', '/backlinks', '/skills', '/api']) {
     try {
       const res = await fetch(BASE + p, { signal: AbortSignal.timeout(20_000) });

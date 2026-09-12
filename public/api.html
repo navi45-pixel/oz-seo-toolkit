@@ -175,7 +175,7 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
       <li>URLs are flexible: <code>example.com</code>, <code>example.com.au</code> and full <code>https://…</code> all work.</li>
       <li>Audits time out after <b>50s</b> server-side; plan client timeouts above that.</li>
       <li><code>GET /api/audit</code> snapshots each host (last 10 runs) and returns a <code>drift</code> object when a previous audit exists.</li>
-      <li>On Cloudflare Workers the engine is identical, except DNS/TLS checks degrade to <code>info</code> and the backlink store needs KV.</li>
+      <li>On Cloudflare Workers the engine is identical, except DNS/TLS checks degrade to <code>info</code>. The backlink directory persists in a bound KV namespace (<code>BACKLINKS</code>) — same validation, dedupe and response shapes as the Node version.</li>
     </ul>
   </div>
 
