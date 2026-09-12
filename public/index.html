@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OzSEO Toolkit — Free Website Audit, AI SEO &amp; Speed Checker for Australian Businesses</title>
+<meta name="description" content="Free all-in-one website audit for Australian businesses. Check SEO, AI/GEO visibility, website health, speed, security and local SEO in every state — NSW, VIC, QLD, WA, SA, TAS, ACT &amp; NT.">
+<style>:root {
+  --bg: #0a1210;
+  --bg2: #0e1a16;
+  --panel: #12211c;
+  --panel2: #16281f;
+  --border: #23443a;
+  --text: #e8f3ee;
+  --muted: #9db8ad;
+  --green: #2fd57b;
+  --green-dim: #1c8f53;
+  --gold: #f5c542;
+  --red: #ff6b6b;
+  --amber: #ffb020;
+  --blue: #5ec8f8;
+  --radius: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: radial-gradient(1200px 600px at 80% -10%, #14352a 0%, var(--bg) 55%) fixed, var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+}
+a { color: var(--green); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+
+/* ---------- header ---------- */
+header.site {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10, 18, 16, 0.88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.nav { display: flex; align-items: center; gap: 22px; height: 64px; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--text); }
+.logo:hover { text-decoration: none; }
+.logo-badge {
+  width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--green), #149a5b);
+  font-size: 17px; color: #04120a; font-weight: 900;
+}
+.nav-links { display: flex; gap: 6px; margin-left: auto; }
+.nav-links a {
+  color: var(--muted); padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 600;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--text); background: var(--panel2); text-decoration: none; }
+.free-pill {
+  background: rgba(245, 197, 66, 0.12); color: var(--gold);
+  border: 1px solid rgba(245, 197, 66, 0.35);
+  font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+}
+
+/* ---------- hero ---------- */
+.hero { padding: 64px 0 30px; text-align: center; }
+.hero h1 { font-size: clamp(28px, 4.6vw, 46px); line-height: 1.15; font-weight: 850; letter-spacing: -0.5px; }
+.hero h1 .grad {
+  background: linear-gradient(90deg, var(--green), #7ee2ae 45%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero p.sub { color: var(--muted); max-width: 720px; margin: 14px auto 0; font-size: 16px; }
+
+/* ---------- audit form ---------- */
+.audit-form {
+  display: flex; gap: 10px; max-width: 680px; margin: 30px auto 12px;
+  background: var(--panel); border: 1px solid var(--border);
+  padding: 10px; border-radius: 16px;
+}
+.audit-form input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text); font-size: 16px; padding: 10px 12px; min-width: 0;
+}
+.audit-form input::placeholder { color: #6d8a7f; }
+.btn {
+  background: linear-gradient(135deg, var(--green), #17a55f);
+  color: #05240f; font-weight: 800; font-size: 15px;
+  border: none; border-radius: 10px; padding: 12px 22px; cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease;
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+.btn:disabled { opacity: 0.55; cursor: wait; transform: none; }
+.btn.secondary {
+  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.chip {
+  font-size: 12.5px; color: var(--muted); background: var(--panel);
+  border: 1px solid var(--border); padding: 5px 12px; border-radius: 999px;
+}
+
+/* ---------- progress ---------- */
+.progress-box {
+  max-width: 680px; margin: 26px auto 0; display: none;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px 22px;
+  text-align: left;
+}
+.progress-box.show { display: block; }
+.progress-title { font-weight: 700; margin-bottom: 10px; display: flex; gap: 10px; align-items: center; }
+.spinner {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--border); border-top-color: var(--green);
+  animation: spin 0.8s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.progress-bar { height: 6px; background: var(--panel2); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; width: 5%; background: linear-gradient(90deg, var(--green), var(--gold)); border-radius: 99px; transition: width 0.6s ease; }
+.progress-step { color: var(--muted); font-size: 13px; margin-top: 8px; }
+
+/* ---------- backend-asleep banner ---------- */
+.backend-banner {
+  max-width: 680px; margin: 0 auto 18px; padding: 14px 18px;
+  background: rgba(255, 176, 32, 0.1); border: 1px solid rgba(255, 176, 32, 0.45);
+  color: #ffe9b3; border-radius: 12px; font-size: 14px; display: none; text-align: left;
+}
+.backend-banner.show { display: block; }
+
+/* ---------- error ---------- */
+.error-box {
+  max-width: 680px; margin: 20px auto; display: none;
+  background: rgba(255, 107, 107, 0.08); border: 1px solid rgba(255, 107, 107, 0.4);
+  color: #ffb3b3; border-radius: 12px; padding: 14px 18px; font-size: 14px;
+}
+.error-box.show { display: block; }
+
+/* ---------- results ---------- */
+#results { display: none; }
+#results.show { display: block; }
+.overall-card {
+  display: flex; flex-wrap: wrap; gap: 26px; align-items: center;
+  background: linear-gradient(135deg, var(--panel), var(--panel2));
+  border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin: 34px 0 20px;
+}
+.score-ring { position: relative; width: 150px; height: 150px; flex: 0 0 auto; margin: 0 auto; }
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring .ring-bg { stroke: #1d3a30; }
+.score-ring .ring-val { transition: stroke-dashoffset 1s ease; }
+.score-num {
+  position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+}
+.score-num b { font-size: 40px; font-weight: 850; }
+.score-num small { display: block; color: var(--muted); font-size: 11px; margin-top: -4px; }
+.overall-meta { flex: 1; min-width: 260px; }
+.overall-meta h2 { font-size: 22px; margin-bottom: 4px; word-break: break-all; }
+.overall-meta .url-line { color: var(--muted); font-size: 13px; margin-bottom: 12px; word-break: break-all; }
+.grade-pill { display: inline-block; font-weight: 800; padding: 3px 12px; border-radius: 999px; font-size: 13px; margin-left: 8px; vertical-align: middle; }
+.summary-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.stat {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 14px; font-size: 13px; color: var(--muted);
+}
+.stat b { color: var(--text); }
+
+/* group score grid */
+.group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-bottom: 30px; }
+.group-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px 18px; cursor: pointer; transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.group-card:hover { border-color: var(--green-dim); transform: translateY(-2px); }
+.group-card .gc-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.group-card h3 { font-size: 14.5px; font-weight: 700; }
+.mini-ring { position: relative; width: 46px; height: 46px; flex: 0 0 auto; }
+.mini-ring svg { transform: rotate(-90deg); }
+.mini-ring span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12.5px; font-weight: 800; }
+.group-card .gc-counts { display: flex; gap: 10px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.dot.pass { background: var(--green); } .dot.warn { background: var(--amber); } .dot.fail { background: var(--red); }
+
+/* section blocks */
+.section-block {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
+  margin-bottom: 18px; overflow: hidden;
+}
+.section-head {
+  display: flex; align-items: center; gap: 12px; padding: 18px 22px; cursor: pointer; user-select: none;
+}
+.section-head:hover { background: rgba(255,255,255,0.02); }
+.section-head h2 { font-size: 17px; font-weight: 750; flex: 1; }
+.section-score { font-weight: 800; font-size: 15px; }
+.section-chevron { transition: transform 0.2s ease; color: var(--muted); }
+.section-block.open .section-chevron { transform: rotate(180deg); }
+.section-body { display: none; padding: 4px 22px 20px; }
+.section-block.open .section-body { display: block; }
+
+.check {
+  display: flex; gap: 12px; padding: 11px 0; border-top: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+}
+.check:first-child { border-top: none; }
+.check-icon { width: 22px; height: 22px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center; font-size: 12px; font-weight: 900; margin-top: 1px; }
+.check-icon.pass { background: rgba(47,213,123,0.15); color: var(--green); }
+.check-icon.warn { background: rgba(255,176,32,0.15); color: var(--amber); }
+.check-icon.fail { background: rgba(255,107,107,0.15); color: var(--red); }
+.check-icon.info { background: rgba(94,200,248,0.12); color: var(--blue); }
+.check-body b { display: block; font-size: 14px; }
+.check-body .msg { color: var(--muted); font-size: 13.5px; word-break: break-word; }
+.check-body .fix { color: #ffe9b3; font-size: 13px; margin-top: 3px; }
+.check-body .fix::before { content: "\2192 Fix: "; font-weight: 700; color: var(--gold); }
+
+/* SERP preview */
+.serp {
+  background: #fff; color: #202124; border-radius: 14px; padding: 20px 24px; margin: 12px 0 26px;
+  max-width: 640px;
+}
+.serp .serp-url { font-size: 13px; color: #202124; display: flex; align-items: center; gap: 8px; }
+.serp .serp-url .fav { width: 22px; height: 22px; border-radius: 50%; background: #f1f3f4; display: grid; place-items: center; font-size: 11px; color: #5f6368; }
+.serp .serp-url span.u { color: #4d5156; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 480px; }
+.serp .serp-title { color: #1a0dab; font-size: 20px; margin: 6px 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.serp .serp-desc { color: #4d5156; font-size: 14px; }
+.serp-note { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+
+/* keywords / tables */
+.kw-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+.kw-pill { background: var(--panel2); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; font-size: 13px; }
+.kw-pill b { color: var(--green); }
+.kw-pill small { color: var(--muted); }
+
+/* speed panel */
+#speedPanel { display: none; }
+#speedPanel.show { display: block; }
+.speed-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 14px 0; }
+.metric-card { background: var(--panel2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
+.metric-card b { display: block; font-size: 22px; font-weight: 850; }
+.metric-card small { color: var(--muted); font-size: 12px; }
+.metric-card.good b { color: var(--green); }
+.metric-card.mid b { color: var(--amber); }
+.metric-card.bad b { color: var(--red); }
+.opps { margin-top: 8px; }
+.opp { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-top: 1px solid rgba(255,255,255,0.05); font-size: 13.5px; }
+.opp span.saving { color: var(--gold); font-weight: 700; white-space: nowrap; }
+.psi-note { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+
+/* quick tools */
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.tool-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px;
+  transition: border-color 0.15s ease, transform 0.15s ease; display: block; color: var(--text);
+}
+.tool-card:hover { border-color: var(--green-dim); transform: translateY(-2px); text-decoration: none; }
+.tool-card h3 { font-size: 15px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.tool-card p { color: var(--muted); font-size: 13px; }
+.tool-card .tag { margin-left: auto; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: rgba(47,213,123,0.13); color: var(--green); }
+.tool-card .tag.ext { background: rgba(94,200,248,0.12); color: var(--blue); }
+
+/* states */
+.states-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.state-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+.state-card h3 { font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.state-code { background: linear-gradient(135deg, var(--green), #149a5b); color: #05240f; font-weight: 900; font-size: 11px; padding: 2px 8px; border-radius: 6px; }
+.state-card p { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.state-card .cities { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.state-card .cities span { font-size: 11.5px; background: var(--panel2); border: 1px solid var(--border); border-radius: 99px; padding: 2px 9px; color: var(--muted); }
+
+/* open source */
+.oss-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.oss-item { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; font-size: 13px; color: var(--muted); }
+.oss-item b { color: var(--text); display: block; font-size: 14px; margin-bottom: 2px; }
+
+/* section titles */
+.section-title { margin: 46px 0 6px; font-size: 24px; font-weight: 800; letter-spacing: -0.3px; }
+.section-sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; max-width: 760px; }
+
+/* footer */
+footer.site { border-top: 1px solid var(--border); margin-top: 60px; padding: 34px 0; color: var(--muted); font-size: 13px; }
+footer.site .cols { display: flex; flex-wrap: wrap; gap: 26px; justify-content: space-between; }
+footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.6px; }
+footer.site .states-line { margin-top: 18px; line-height: 1.8; }
+
+/* backlinks page */
+.form-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 26px;
+}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid .full { grid-column: 1 / -1; }
+label.field { display: block; font-size: 13px; font-weight: 700; color: var(--muted); }
+label.field input, label.field select, label.field textarea {
+  width: 100%; margin-top: 6px; background: var(--bg2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; font-size: 14px;
+  font-family: inherit; outline: none;
+}
+label.field input:focus, label.field select:focus, label.field textarea:focus { border-color: var(--green-dim); }
+.form-msg { margin-top: 12px; font-size: 14px; }
+.form-msg.ok { color: var(--green); } .form-msg.err { color: var(--red); }
+
+.listing {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px;
+}
+.listing h3 { font-size: 15.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.listing .meta { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+.badge { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--border); color: var(--muted); }
+.badge.state { background: rgba(47,213,123,0.13); color: var(--green); border-color: rgba(47,213,123,0.3); }
+.badge.cat { background: rgba(245,197,66,0.1); color: var(--gold); border-color: rgba(245,197,66,0.3); }
+.listing p { color: var(--muted); font-size: 13.5px; }
+.listing .lf { margin-top: 8px; font-size: 13px; color: #ffe9b3; }
+.filters { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 18px; }
+.filters select { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 14px; }
+.listings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.empty-note { color: var(--muted); background: var(--panel); border: 1px dashed var(--border); border-radius: 14px; padding: 26px; text-align: center; font-size: 14px; }
+
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 20px 0 30px; }
+.step { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+.step .n { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--green), #149a5b); color: #05240f; font-weight: 900; display: grid; place-items: center; margin-bottom: 10px; }
+.step h3 { font-size: 15px; margin-bottom: 4px; }
+.step p { font-size: 13px; color: var(--muted); }
+
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .audit-form { flex-direction: column; }
+  .audit-form .btn { width: 100%; }
+  .nav-links a { padding: 8px 8px; }
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232fd57b'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' font-family='Arial' font-weight='bold' fill='%2305240f'%3EOz%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site">
+  <div class="container nav">
+    <a class="logo" href="/"><span class="logo-badge">Oz</span> OzSEO Toolkit</a>
+    <nav class="nav-links">
+      <a href="/" class="active">Free Audit</a>
+      <a href="/backlinks">Free Backlinks</a>
+      <a href="/skills">Skills Hub</a>
+      <a href="/api">API</a>
+    </nav>
+    <span class="free-pill">100% FREE &bull; No sign-up</span>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <h1>Free complete website audit for<br><span class="grad">Australian businesses</span></h1>
+    <p class="sub">Paste your website link and get an instant audit across SEO, AI search (GEO) visibility, website health, speed, security, mobile and local SEO — built for businesses from Sydney to Perth, Brisbane to Hobart.</p>
+
+    <form class="audit-form" id="auditForm">
+      <input type="text" id="urlInput" placeholder="Enter your website, e.g. yourbusiness.com.au" autocomplete="url" spellcheck="false" aria-label="Website URL">
+      <button class="btn" type="submit" id="auditBtn">Run Full Audit</button>
+    </form>
+
+    <div class="chips">
+      <span class="chip">&#128269; On-Page SEO</span>
+      <span class="chip">&#129302; AI / GEO Visibility</span>
+      <span class="chip">&#9889; Speed &amp; Core Web Vitals</span>
+      <span class="chip">&#128274; Security &amp; SSL</span>
+      <span class="chip">&#127760; DNS &amp; Domain</span>
+      <span class="chip">&#128241; Mobile</span>
+      <span class="chip">&#128205; Local SEO (AU)</span>
+      <span class="chip">&#128221; Content &amp; Readability</span>
+    </div>
+
+    <div class="progress-box" id="progressBox">
+      <div class="progress-title"><span class="spinner"></span> <span id="progressTitle">Auditing your website&hellip;</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-step" id="progressStep">Fetching your homepage&hellip;</div>
+    </div>
+    <div class="error-box" id="errorBox"></div>
+  </section>
+
+  <!-- ===================== RESULTS ===================== -->
+  <section id="results">
+    <div class="overall-card">
+      <div class="score-ring">
+        <svg width="150" height="150">
+          <circle class="ring-bg" cx="75" cy="75" r="64" fill="none" stroke-width="12"></circle>
+          <circle class="ring-val" id="overallRing" cx="75" cy="75" r="64" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="402" stroke-dashoffset="402"></circle>
+        </svg>
+        <div class="score-num"><div><b id="overallScore">0</b><small>OVERALL / 100</small></div></div>
+      </div>
+      <div class="overall-meta">
+        <h2 id="resultHost">—<span class="grade-pill" id="gradePill"></span></h2>
+        <div class="url-line" id="resultUrl"></div>
+        <div class="summary-stats" id="summaryStats"></div>
+      </div>
+    </div>
+
+    <div class="group-grid" id="groupGrid"></div>
+
+    <h2 class="section-title">Google preview (SERP snippet)</h2>
+    <p class="section-sub">This is roughly how your page appears in Google search results today.</p>
+    <div class="serp">
+      <div class="serp-url"><span class="fav">&#127760;</span><span class="u" id="serpUrl"></span></div>
+      <div class="serp-title" id="serpTitle"></div>
+      <div class="serp-desc" id="serpDesc"></div>
+    </div>
+
+    <!-- Speed / Lighthouse -->
+    <div id="speedPanel" class="section-block open">
+      <div class="section-head" data-toggle>
+        <h2>&#9889; Speed &amp; Core Web Vitals — Google Lighthouse</h2>
+        <span class="section-score" id="speedStatus">running&hellip;</span>
+        <span class="section-chevron">&#9662;</span>
+      </div>
+      <div class="section-body" id="speedBody">
+        <div class="progress-title"><span class="spinner"></span> Running a real Lighthouse lab test via the free PageSpeed Insights API&hellip; this usually takes 20&ndash;50 seconds.</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Detailed audit results</h2>
+    <p class="section-sub">Click any category to expand every check, with plain-English fixes. Everything is run on our servers for free — no limits, no API keys.</p>
+    <div id="detailSections"></div>
+  </section>
+
+  <!-- ===================== QUICK TOOLS ===================== -->
+  <h2 class="section-title">More free tools worth using</h2>
+  <p class="section-sub">The essential free toolkit — ours plus the best free tools from Google, Microsoft and the open-source community.</p>
+  <div class="tools-grid">
+    <a class="tool-card" href="/backlinks"><h3>&#128279; Free Backlink Directory <span class="tag">Built-in</span></h3><p>List your site free, find bloggers and earn quality Australian backlinks.</p></a>
+    <a class="tool-card" href="https://search.google.com/search-console/about" target="_blank" rel="noopener"><h3>&#128200; Google Search Console <span class="tag ext">Google</span></h3><p>Track rankings, indexing and clicks in Google Search — the #1 free SEO tool.</p></a>
+    <a class="tool-card" href="https://pagespeed.web.dev/" target="_blank" rel="noopener"><h3>&#9889; PageSpeed Insights <span class="tag ext">Google</span></h3><p>Lab + field Core Web Vitals powered by Lighthouse and Chrome user data.</p></a>
+    <a class="tool-card" href="https://search.google.com/test/rich-results" target="_blank" rel="noopener"><h3>&#10024; Rich Results Test <span class="tag ext">Google</span></h3><p>Validate your schema markup for stars, FAQs, local business panels and more.</p></a>
+    <a class="tool-card" href="https://trends.google.com.au/" target="_blank" rel="noopener"><h3>&#128200; Google Trends <span class="tag ext">Google</span></h3><p>See what Australians are searching, by state — perfect for content planning.</p></a>
+    <a class="tool-card" href="https://ads.google.com/home/tools/keyword-planner/" target="_blank" rel="noopener"><h3>&#128270; Keyword Planner <span class="tag ext">Google</span></h3><p>Free keyword volume data (with a free Google Ads account).</p></a>
+    <a class="tool-card" href="https://www.bing.com/webmasters" target="_blank" rel="noopener"><h3>&#127760; Bing Webmaster Tools <span class="tag ext">Microsoft</span></h3><p>Free indexing tools — Bing also powers ChatGPT/Copilot search citations.</p></a>
+    <a class="tool-card" href="https://validator.schema.org/" target="_blank" rel="noopener"><h3>&#129513; Schema.org Validator <span class="tag ext">Free</span></h3><p>Check structured data syntax — key for AI engines and rich results.</p></a>
+    <a class="tool-card" href="https://www.google.com/business/" target="_blank" rel="noopener"><h3>&#128205; Google Business Profile <span class="tag ext">Google</span></h3><p>The single highest-ROI free local SEO tool for Australian businesses.</p></a>
+  </div>
+
+  <!-- ===================== STATES ===================== -->
+  <h2 class="section-title">Built for every Australian state &amp; territory</h2>
+  <p class="section-sub">Local SEO works differently in each market. Our audit checks for suburb, city and state mentions, Australian phone formats, ABN display, geo markup and more — the signals that win the local pack in your area.</p>
+  <div class="states-grid">
+    <div class="state-card"><h3><span class="state-code">NSW</span> New South Wales</h3><p>Biggest market in Australia. Competition is fierce — suburb-level landing pages and reviews win here.</p><div class="cities"><span>Sydney</span><span>Newcastle</span><span>Wollongong</span><span>Central Coast</span></div></div>
+    <div class="state-card"><h3><span class="state-code">VIC</span> Victoria</h3><p>Dense metro search demand. Strong GBP activity and fresh content keep you visible.</p><div class="cities"><span>Melbourne</span><span>Geelong</span><span>Ballarat</span><span>Bendigo</span></div></div>
+    <div class="state-card"><h3><span class="state-code">QLD</span> Queensland</h3><p>Regional cities matter as much as Brisbane. Target Gold Coast, Sunshine Coast &amp; Far North separately.</p><div class="cities"><span>Brisbane</span><span>Gold Coast</span><span>Sunshine Coast</span><span>Cairns</span></div></div>
+    <div class="state-card"><h3><span class="state-code">WA</span> Western Australia</h3><p>Less competition outside Perth — a strong chance to dominate statewide keywords quickly.</p><div class="cities"><span>Perth</span><span>Fremantle</span><span>Mandurah</span><span>Bunbury</span></div></div>
+    <div class="state-card"><h3><span class="state-code">SA</span> South Australia</h3><p>Smaller market, loyal local searchers. Citations and local backlinks move the needle fast.</p><div class="cities"><span>Adelaide</span><span>Mount Gambier</span><span>Victor Harbor</span></div></div>
+    <div class="state-card"><h3><span class="state-code">TAS</span> Tasmania</h3><p>Tourism and hospitality dominate search. Schema and map embeds are quick wins.</p><div class="cities"><span>Hobart</span><span>Launceston</span><span>Devonport</span></div></div>
+    <div class="state-card"><h3><span class="state-code">ACT</span> Australian Capital Territory</h3><p>Compact, high-income market — ranking for "Canberra + service" terms converts extremely well.</p><div class="cities"><span>Canberra</span><span>Belconnen</span><span>Tuggeranong</span></div></div>
+    <div class="state-card"><h3><span class="state-code">NT</span> Northern Territory</h3><p>Lowest competition in the country. Mobile-first optimisation is critical for Darwin &amp; Alice Springs.</p><div class="cities"><span>Darwin</span><span>Alice Springs</span><span>Palmerston</span></div></div>
+  </div>
+
+  <!-- ===================== OPEN SOURCE ===================== -->
+  <h2 class="section-title">Powered by free, open-source projects</h2>
+  <p class="section-sub">Everything here runs on free GitHub repositories and free public APIs — no paid tools, no lock-in.</p>
+  <div class="oss-list">
+    <div class="oss-item"><b>Express.js</b> Fast, minimal Node.js web server. <a href="https://github.com/expressjs/express" target="_blank" rel="noopener">github.com/expressjs/express</a></div>
+    <div class="oss-item"><b>Cheerio</b> Blazing-fast HTML parsing used for all on-page checks. <a href="https://github.com/cheeriojs/cheerio" target="_blank" rel="noopener">github.com/cheeriojs/cheerio</a></div>
+    <div class="oss-item"><b>Google Lighthouse</b> Engine behind the PageSpeed speed test. <a href="https://github.com/GoogleChrome/lighthouse" target="_blank" rel="noopener">github.com/GoogleChrome/lighthouse</a></div>
+    <div class="oss-item"><b>PageSpeed Insights API</b> Free lab testing of Core Web Vitals by Google. <a href="https://developers.google.com/speed/docs/insights/v5/get-started" target="_blank" rel="noopener">developers.google.com</a></div>
+    <div class="oss-item"><b>RDAP</b> Free, modern replacement for WHOIS — powers domain age checks. <a href="https://rdap.org/" target="_blank" rel="noopener">rdap.org</a></div>
+    <div class="oss-item"><b>Schema.org</b> The free vocabulary behind structured data &amp; AI SEO checks. <a href="https://schema.org/" target="_blank" rel="noopener">schema.org</a></div>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="container">
+    <div class="cols">
+      <div>
+        <h4>OzSEO Toolkit</h4>
+        <p>Free website audits, AI search visibility checks and a free Australian backlink directory.<br>No account. No card. No catch.</p>
+      </div>
+      <div>
+        <h4>Tools</h4>
+        <p><a href="/">Website Audit</a><br><a href="/backlinks">Backlink &amp; Blogger Directory</a><br><a href="#speedPanel">Speed Test (Lighthouse)</a><br><a href="/api">API Reference</a></p>
+      </div>
+      <div>
+        <h4>Serving all of Australia</h4>
+        <p class="states-line">
+          NSW &middot; Sydney &nbsp; VIC &middot; Melbourne &nbsp; QLD &middot; Brisbane &nbsp; WA &middot; Perth<br>
+          SA &middot; Adelaide &nbsp; TAS &middot; Hobart &nbsp; ACT &middot; Canberra &nbsp; NT &middot; Darwin
+        </p>
+      </div>
+    </div>
+    <p style="margin-top:22px;font-size:12px;">&copy; 2026 OzSEO Toolkit &middot; Built with free open-source software &middot; Results are estimates — always verify in Google Search Console.</p>
+  </div>
+</footer>
+
+<script>'use strict';
+/* OzSEO Toolkit — audit page logic */
+
+const $id = (s) => document.getElementById(s);
+const form = $id('auditForm');
+const urlInput = $id('urlInput');
+const auditBtn = $id('auditBtn');
+const progressBox = $id('progressBox');
+const progressFill = $id('progressFill');
+const progressStep = $id('progressStep');
+const progressTitle = $id('progressTitle');
+const errorBox = $id('errorBox');
+const results = $id('results');
+
+const STEPS = [
+  'Fetching your homepage…',
+  'Parsing HTML, titles, meta tags & headings…',
+  'Checking AI / GEO visibility & structured data…',
+  'Scanning robots.txt, sitemap & broken links…',
+  'Testing SSL certificate, DNS & security headers…',
+  'Analysing content, readability & local SEO signals…',
+  'Scoring everything…',
+];
+
+let stepTimer = null;
+
+/* ---------- Backend reachability self-check ----------
+   Detects "server asleep" / static-preview mode BEFORE the user wastes a click. */
+const BACKEND_MSG = '\u26A0\uFE0F The audit engine is not connected. This happens in two cases: (1) you are viewing the static file preview — audits only run in the LIVE PREVIEW of the running \u201COzSEO Toolkit\u201D process; or (2) the server fell asleep between sessions — ask the assistant to restart it, then refresh this page.';
+
+function showBackendBanner() {
+  let b = document.getElementById('backendBanner');
+  if (!b) {
+    b = document.createElement('div');
+    b.id = 'backendBanner';
+    b.className = 'backend-banner';
+    const hero = document.querySelector('.hero');
+    hero && hero.prepend(b);
+  }
+  b.innerHTML = BACKEND_MSG;
+  b.classList.add('show');
+}
+
+let backendOk = null;
+(async () => {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 4000);
+    const r = await fetch('/api/health', { signal: ctrl.signal });
+    clearTimeout(t);
+    const ct = r.headers.get('content-type') || '';
+    backendOk = r.ok && ct.includes('application/json');
+  } catch { backendOk = false; }
+  if (!backendOk) showBackendBanner();
+})();
+
+/* Parse JSON safely — turns empty/broken responses into a friendly error message */
+async function safeJson(res) {
+  let text = '';
+  try { text = await res.text(); } catch { /* body interrupted */ }
+  if (!text) {
+    if ([404, 502, 503].includes(res.status)) {
+      throw new Error(`The audit service could not be reached (status ${res.status}). The server was likely asleep between sessions — please try again in a few seconds, or ask the assistant to restart it.`);
+    }
+    throw new Error(`The server returned an empty response (status ${res.status}). This usually means the request timed out while the target website was slow to respond — please try again.`);
+  }
+  try { return JSON.parse(text); }
+  catch { throw new Error(BACKEND_MSG); }
+}
+
+function startProgress() {
+  progressBox.classList.add('show');
+  errorBox.classList.remove('show');
+  let i = 0;
+  progressFill.style.width = '6%';
+  progressStep.textContent = STEPS[0];
+  clearInterval(stepTimer);
+  stepTimer = setInterval(() => {
+    i = Math.min(i + 1, STEPS.length - 1);
+    progressStep.textContent = STEPS[i];
+    progressFill.style.width = Math.min(8 + i * 13, 90) + '%';
+  }, 3200);
+}
+function stopProgress() {
+  clearInterval(stepTimer);
+  progressFill.style.width = '100%';
+  setTimeout(() => { progressBox.classList.remove('show'); progressFill.style.width = '5%'; }, 500);
+}
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.classList.add('show');
+  progressBox.classList.remove('show');
+  clearInterval(stepTimer);
+}
+
+function scoreColor(s) { return s >= 80 ? 'var(--green)' : s >= 50 ? 'var(--amber)' : 'var(--red)'; }
+function gradeOf(s) {
+  if (s >= 90) return ['A', 'var(--green)'];
+  if (s >= 80) return ['B', '#7ee2ae'];
+  if (s >= 65) return ['C', 'var(--gold)'];
+  if (s >= 50) return ['D', 'var(--amber)'];
+  return ['F', 'var(--red)'];
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+const ICONS = { pass: '\u2713', warn: '!', fail: '\u2717', info: 'i' };
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const url = urlInput.value.trim();
+  if (!url) { showError('Please enter your website URL first.'); return; }
+  auditBtn.disabled = true;
+  auditBtn.textContent = 'Auditing…';
+  results.classList.remove('show');
+  startProgress();
+
+  try {
+    if (backendOk === false) { stopProgress(); showError(BACKEND_MSG); auditBtn.disabled = false; auditBtn.textContent = 'Run Full Audit'; return; }
+    const ctrl = new AbortController();
+    const kill = setTimeout(() => ctrl.abort(), 60000);
+    let res;
+    try {
+      res = await fetch('/api/audit?url=' + encodeURIComponent(url), { signal: ctrl.signal });
+    } catch (e) {
+      if (e.name === 'AbortError') throw new Error('The audit timed out after 60 seconds. The target website may be very slow — please try again.');
+      throw new Error('Could not reach the audit server. If you are viewing the static file preview, audits only work in the LIVE preview (the running server) — open that instead.');
+    } finally { clearTimeout(kill); }
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data.error || 'Audit failed.');
+    stopProgress();
+    render(data);
+    runSpeedTest(url); // fires in background, fills the speed panel
+  } catch (err) {
+    showError(err.message);
+    auditBtn.disabled = false;
+    auditBtn.textContent = 'Run Full Audit';
+  }
+});
+
+function render(d) {
+  results.classList.add('show');
+  results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // overall ring
+  const ring = $id('overallRing');
+  const circ = 402;
+  ring.style.stroke = scoreColor(d.overall);
+  setTimeout(() => { ring.style.strokeDashoffset = circ - (circ * d.overall) / 100; }, 60);
+  $id('overallScore').textContent = d.overall;
+  const [g, gc] = gradeOf(d.overall);
+  const pill = $id('gradePill');
+  pill.textContent = 'Grade ' + g;
+  pill.style.background = gc; pill.style.color = '#08130c';
+
+  $id('resultHost').firstChild.textContent = d.host;
+  $id('resultUrl').textContent = d.url + '  •  audited ' + new Date(d.fetchedAt).toLocaleString('en-AU');
+
+  const totals = Object.values(d.groups).reduce((a, x) => ({ p: a.p + x.pass, w: a.w + x.warn, f: a.f + x.fail }), { p: 0, w: 0, f: 0 });
+  $id('summaryStats').innerHTML = [
+    `<div class="stat"><span class="dot pass"></span><b>${totals.p}</b> passed</div>`,
+    `<div class="stat"><span class="dot warn"></span><b>${totals.w}</b> warnings</div>`,
+    `<div class="stat"><span class="dot fail"></span><b>${totals.f}</b> failed</div>`,
+    `<div class="stat">TTFB <b>${d.ttfb} ms</b></div>`,
+    `<div class="stat">Page size <b>${d.pageSizeKb} KB</b></div>`,
+    `<div class="stat">Words <b>${d.wordCount.toLocaleString()}</b></div>`,
+    d.ssl ? `<div class="stat">SSL valid <b>${d.ssl.daysLeft} days</b></div>` : '',
+    d.drift ? `<div class="stat">Drift <b>${d.drift.previousOverall} \u2192 ${d.overall}</b> (${d.drift.delta >= 0 ? '+' : ''}${d.drift.delta}) since ${new Date(d.drift.previousAt).toLocaleDateString('en-AU')}</div>` : '',
+  ].join('');
+
+  // group cards
+  const grid = $id('groupGrid');
+  grid.innerHTML = Object.entries(d.groups).map(([key, grp]) => {
+    const c = 2 * Math.PI * 19;
+    const off = c - (c * grp.score) / 100;
+    return `<div class="group-card" onclick="document.getElementById('sec-${key}').scrollIntoView({behavior:'smooth'});document.getElementById('sec-${key}').classList.add('open')">
+      <div class="gc-top">
+        <h3>${esc(grp.label)}</h3>
+        <div class="mini-ring">
+          <svg width="46" height="46">
+            <circle cx="23" cy="23" r="19" fill="none" stroke="#1d3a30" stroke-width="5"></circle>
+            <circle cx="23" cy="23" r="19" fill="none" stroke="${scoreColor(grp.score)}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 23 23)"></circle>
+          </svg>
+          <span style="color:${scoreColor(grp.score)}">${grp.score}</span>
+        </div>
+      </div>
+      <div class="gc-counts">
+        <span><span class="dot pass"></span>${grp.pass}</span>
+        <span><span class="dot warn"></span>${grp.warn}</span>
+        <span><span class="dot fail"></span>${grp.fail}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // SERP preview
+  $id('serpUrl').textContent = (d.serp.url || d.url).replace(/^https?:\/\//, '').split('?')[0];
+  $id('serpTitle').textContent = d.serp.title || '(no title tag found)';
+  $id('serpDesc').textContent = d.serp.description || '(no meta description found — Google will improvise one, which usually hurts click-through rate)';
+
+  // detail sections
+  const order = ['seo', 'geo', 'technical', 'performance', 'security', 'mobile', 'content', 'local'];
+  const details = $id('detailSections');
+  details.innerHTML = order.map((key) => {
+    const grp = d.groups[key];
+    if (!grp) return '';
+    const checks = d.checks.filter((c) => c.group === key);
+    const open = grp.fail > 0 ? ' open' : '';
+    return `<div class="section-block${open}" id="sec-${key}">
+      <div class="section-head" onclick="this.parentElement.classList.toggle('open')">
+        <h2>${esc(grp.label)}</h2>
+        <span class="section-score" style="color:${scoreColor(grp.score)}">${grp.score}/100</span>
+        <span class="section-chevron">&#9662;</span>
+      </div>
+      <div class="section-body">
+        ${checks.map((c) => `<div class="check">
+          <span class="check-icon ${c.status}">${ICONS[c.status]}</span>
+          <div class="check-body">
+            <b>${esc(c.name)}</b>
+            <div class="msg">${esc(c.message)}</div>
+            ${c.fix ? `<div class="fix">${esc(c.fix)}</div>` : ''}
+          </div>
+        </div>`).join('')}
+        ${key === 'content' ? keywordsBlock(d) : ''}
+        ${key === 'geo' ? aiCrawlersBlock(d) : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function keywordsBlock(d) {
+  if (!d.keywords || !d.keywords.length) return '';
+  return `<div style="margin-top:12px"><b style="font-size:14px">Top keywords on this page</b>
+    <div class="kw-grid">${d.keywords.map((k) => `<span class="kw-pill"><b>${esc(k.word)}</b> &times;${k.count} <small>(${k.density}%)</small></span>`).join('')}</div>
+    <p class="psi-note">Readability score: ${d.readability ?? 'n/a'}/100 (Flesch Reading Ease). Aim for 50+ so both humans and AI engines summarise you accurately.</p>
+  </div>`;
+}
+
+function aiCrawlersBlock(d) {
+  if (!d.robotsTxt) return '';
+  return `<div style="margin-top:14px"><b style="font-size:14px">AI crawler access in robots.txt</b>
+    <div class="kw-grid">${d.aiCrawlers.map((c) => `<span class="kw-pill" style="${c.blocked ? 'border-color:rgba(255,107,107,.5)' : ''}">${c.blocked ? '\u26D4' : '\u2705'} <b>${esc(c.bot)}</b> <small>${esc(c.vendor)}</small></span>`).join('')}</div>
+    <p class="psi-note">If you want to appear in AI answers (ChatGPT, Perplexity, Google AI Overviews), don\u2019t block these crawlers. Blocking CCBot/Google-Extended removes you from most AI training &amp; citation sources.</p>
+  </div>`;
+}
+
+/* ---------- Speed: built-in probe + PageSpeed (Lighthouse) ---------- */
+function probeCard(p) {
+  const cls = p.ttfbAvg <= 600 ? 'good' : p.ttfbAvg <= 1500 ? 'mid' : 'bad';
+  return `<div style="margin:6px 0 12px"><b style="font-size:14px">Built-in server probe (${p.samples} live requests)</b>
+    <div class="speed-grid">
+      <div class="metric-card ${cls}"><b>${p.ttfbAvg} ms</b><small>Avg TTFB</small></div>
+      <div class="metric-card ${p.ttfbBest <= 400 ? 'good' : 'mid'}"><b>${p.ttfbBest} ms</b><small>Best TTFB</small></div>
+      <div class="metric-card ${p.htmlKb <= 150 ? 'good' : p.htmlKb <= 400 ? 'mid' : 'bad'}"><b>${p.htmlKb} KB</b><small>HTML weight</small></div>
+      <div class="metric-card ${p.encoding !== 'none' ? 'good' : 'mid'}"><b>${esc(p.encoding)}</b><small>Compression</small></div>
+    </div></div>`;
+}
+
+async function runSpeedTest(url) {
+  const panel = $id('speedPanel');
+  const body = $id('speedBody');
+  const status = $id('speedStatus');
+  panel.classList.add('show');
+
+  // 1) built-in probe (always works)
+  let probeHtml = '';
+  try {
+    const pr = await fetch('/api/perf?url=' + encodeURIComponent(url));
+    const p = await safeJson(pr);
+    if (pr.ok && p) probeHtml = probeCard(p);
+  } catch { /* probe optional */ }
+
+  // 2) Google Lighthouse via free PSI API
+  try {
+    const res = await fetch('/api/speed?url=' + encodeURIComponent(url));
+    const s = await safeJson(res);
+    if (!res.ok) throw new Error(s.error || 'Speed test failed');
+    status.textContent = (s.scores.performance != null ? s.scores.performance + '/100' : 'done');
+    status.style.color = scoreColor(s.scores.performance ?? 0);
+
+    const catChip = (label, v) => v == null ? '' : `<span class="chip" style="color:${scoreColor(v)}">${label}: <b>${v}</b></span>`;
+    const m = s.metrics;
+    const card = (label, met, good, bad, fmt) => {
+      if (met.value == null) return '';
+      const cls = met.value <= good ? 'good' : met.value <= bad ? 'mid' : 'bad';
+      return `<div class="metric-card ${cls}"><b>${fmt(met.value)}</b><small>${label}</small></div>`;
+    };
+    const ms = (v) => v >= 1000 ? (v / 1000).toFixed(1) + ' s' : Math.round(v) + ' ms';
+
+    body.innerHTML = probeHtml + `
+      <b style="font-size:14px">Google Lighthouse lab test</b>
+      <div class="chips" style="justify-content:flex-start;margin:6px 0 6px">
+        ${catChip('Performance', s.scores.performance)}
+        ${catChip('Accessibility', s.scores.accessibility)}
+        ${catChip('Best Practices', s.scores.bestPractices)}
+        ${catChip('SEO (Lighthouse)', s.scores.seo)}
+        <span class="chip">Lab test: ${s.strategy}</span>
+      </div>
+      <div class="speed-grid">
+        ${card('First Contentful Paint', m.fcp, 1800, 3000, ms)}
+        ${card('Largest Contentful Paint', m.lcp, 2500, 4000, ms)}
+        ${card('Total Blocking Time', m.tbt, 200, 600, ms)}
+        ${card('Cumulative Layout Shift', m.cls, 0.1, 0.25, (v) => v.toFixed(2))}
+        ${card('Speed Index', m.si, 3400, 5800, ms)}
+        ${card('Time to Interactive', m.tti, 3800, 7300, ms)}
+      </div>
+      ${s.lcpElement ? `<p class="psi-note">Largest element painted: <code style="color:var(--blue)">${esc(s.lcpElement).slice(0, 140)}</code> — optimise this (compress, preload, serve responsive sizes) for the biggest LCP win.</p>` : ''}
+      ${s.opportunities.length ? `<b style="font-size:14px">Top speed opportunities</b>
+        <div class="opps">${s.opportunities.map((o) => `<div class="opp"><span>${esc(o.title)}</span><span class="saving">save ~${(o.saving / 1000).toFixed(1)}s</span></div>`).join('')}</div>` : '<p class="psi-note">No major speed opportunities detected — nice work!</p>'}
+      <p class="psi-note">Full interactive report (incl. real Chrome user field data): <a href="${esc(s.reportUrl)}" target="_blank" rel="noopener">open in PageSpeed Insights &rarr;</a></p>`;
+  } catch (err) {
+    status.textContent = 'probe only';
+    status.style.color = 'var(--amber)';
+    body.innerHTML = probeHtml + `<p class="psi-note">&#9888;&#65039; Google Lighthouse: ${esc(err.message)}<br>The free PageSpeed API occasionally rate-limits shared IPs. Wait a minute and re-run, or test directly at <a href="https://pagespeed.web.dev/" target="_blank" rel="noopener">pagespeed.web.dev</a>. ${probeHtml ? 'The built-in probe results above still show your real server speed.' : ''}</p>`;
+  }
+}
+</script>
+</body>
+</html>

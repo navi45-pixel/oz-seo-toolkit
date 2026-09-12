@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Reference — every endpoint, live | OzSEO Toolkit</title>
+<meta name="description" content="Free SEO API reference: website audits, PageSpeed, performance probe, health and the AU backlink directory — every endpoint, parameter and response shape, with live examples.">
+<style>
+:root {
+  --bg: #0a1210; --bg2: #0e1a16; --panel: #12211c; --panel2: #16281f;
+  --border: #23443a; --text: #e8f3ee; --muted: #9db8ad;
+  --green: #2fd57b; --green-dim: #1c8f53; --gold: #f5c542;
+  --red: #ff6b6b; --amber: #ffb020; --blue: #5ec8f8; --radius: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: radial-gradient(1200px 600px at 80% -10%, #14352a 0%, var(--bg) 55%) fixed, var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+}
+a { color: var(--green); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+code, pre { font-family: ui-monospace, "Cascadia Code", Consolas, "SF Mono", Menlo, monospace; }
+
+header.site {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10, 18, 16, 0.88); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.nav { display: flex; align-items: center; gap: 22px; height: 64px; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--text); }
+.logo-badge {
+  width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--green), #149a5b); font-size: 17px; color: #04120a; font-weight: 900;
+}
+.nav-links { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+.nav-links a { color: var(--muted); padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; }
+.nav-links a:hover, .nav-links a.active { color: var(--text); background: var(--panel2); text-decoration: none; }
+.free-pill {
+  background: rgba(245, 197, 66, 0.12); color: var(--gold);
+  border: 1px solid rgba(245, 197, 66, 0.35);
+  font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+}
+
+.hero { padding: 56px 0 26px; text-align: center; }
+.hero h1 { font-size: clamp(26px, 4.4vw, 44px); line-height: 1.15; font-weight: 850; letter-spacing: -0.5px; }
+.hero h1 .grad {
+  background: linear-gradient(90deg, var(--green), #7ee2ae 45%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero p.sub { color: var(--muted); max-width: 760px; margin: 14px auto 0; font-size: 16px; }
+
+.backend-banner {
+  max-width: 760px; margin: 0 auto 18px; padding: 14px 18px;
+  background: rgba(255, 176, 32, 0.1); border: 1px solid rgba(255, 176, 32, 0.45);
+  color: #ffe9b3; border-radius: 12px; font-size: 14px; display: none; text-align: left;
+}
+.backend-banner.show { display: block; }
+
+.endpoint {
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 24px; margin: 18px 0; scroll-margin-top: 84px;
+}
+.endpoint h2 { font-size: 19px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.method {
+  font-size: 12px; font-weight: 900; letter-spacing: 0.5px; padding: 3px 10px; border-radius: 7px;
+  background: rgba(47, 213, 123, 0.14); color: var(--green);
+}
+.method.post { background: rgba(94, 200, 248, 0.13); color: var(--blue); }
+.path { font-size: 15.5px; color: var(--text); }
+.endpoint > p.desc { color: var(--muted); font-size: 14px; margin: 8px 0 4px; }
+h3.sub { font-size: 14px; margin: 18px 0 8px; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px; }
+
+table.params { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.params th { text-align: left; color: var(--muted); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 1px solid var(--border); }
+table.params td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+table.params td code { color: var(--gold); font-size: 12.5px; }
+table.params .req { color: var(--red); font-size: 11px; font-weight: 800; }
+table.params .opt { color: var(--muted); font-size: 11px; font-weight: 700; }
+table.params p { color: var(--muted); margin: 0; }
+
+pre.shape {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 16px; font-size: 12.5px; line-height: 1.6; overflow-x: auto; color: #c9e4d8;
+}
+pre.shape .c { color: #6d8a7f; } /* comment-ish */
+
+/* live runner */
+.runner { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 14px; }
+.runner-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.runner input {
+  flex: 1; min-width: 200px; background: var(--panel); color: var(--text);
+  border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; font-size: 14px; outline: none;
+}
+.runner input:focus { border-color: var(--green-dim); }
+.btn {
+  background: linear-gradient(135deg, var(--green), #17a55f); color: #05240f; font-weight: 800; font-size: 14px;
+  border: none; border-radius: 9px; padding: 10px 18px; cursor: pointer; white-space: nowrap;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: 0.55; cursor: wait; }
+.btn.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+.status-line { display: flex; gap: 10px; align-items: center; margin: 10px 0 0; font-size: 13px; color: var(--muted); min-height: 20px; flex-wrap: wrap; }
+.badge { font-size: 11px; font-weight: 800; padding: 2px 9px; border-radius: 999px; }
+.badge.ok { background: rgba(47,213,123,0.14); color: var(--green); }
+.badge.err { background: rgba(255,107,107,0.14); color: var(--red); }
+pre.output {
+  background: #060d0b; border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; margin-top: 10px; font-size: 12px; line-height: 1.55; overflow: auto; max-height: 420px;
+  color: #c9e4d8; white-space: pre;
+}
+.field-doc { font-size: 13.5px; color: var(--muted); margin: 4px 0 0; }
+.field-doc code { color: var(--gold); font-size: 12.5px; }
+
+.note {
+  background: rgba(94, 200, 248, 0.07); border: 1px solid rgba(94, 200, 248, 0.25);
+  border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #bfe2f2; margin-top: 12px;
+}
+.note.gold { background: rgba(245, 197, 66, 0.07); border-color: rgba(245, 197, 66, 0.3); color: #ffe9b3; }
+
+.toc { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 18px 0 4px; }
+.toc a {
+  font-size: 13px; font-weight: 700; color: var(--muted);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px;
+}
+.toc a:hover { color: var(--text); border-color: var(--green-dim); text-decoration: none; }
+
+.section-title { margin: 40px 0 6px; font-size: 24px; font-weight: 800; letter-spacing: -0.3px; }
+footer.site { border-top: 1px solid var(--border); margin-top: 60px; padding: 34px 0; color: var(--muted); font-size: 13px; }
+footer.site .cols { display: flex; flex-wrap: wrap; gap: 26px; justify-content: space-between; }
+footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.6px; }
+@media (max-width: 640px) { .nav-links a { padding: 8px 8px; } .method { display: block; width: fit-content; } }
+</style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232fd57b'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' font-family='Arial' font-weight='bold' fill='%2305240f'%3EOz%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site">
+  <div class="container nav">
+    <a class="logo" href="/"><span class="logo-badge">Oz</span> OzSEO Toolkit</a>
+    <nav class="nav-links">
+      <a href="/">Free Audit</a>
+      <a href="/backlinks">Free Backlinks</a>
+      <a href="/skills">Skills Hub</a>
+      <a href="/api" class="active">API</a>
+    </nav>
+    <span class="free-pill">100% FREE &bull; No sign-up</span>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <h1>API Reference — <span class="grad">every endpoint, live</span></h1>
+    <p class="sub">Everything the OzSEO Toolkit UI does, you can do over plain HTTP JSON — free, no key required (PageSpeed has an optional key). Every endpoint below has a <b>live example</b>: press <b>Run</b> and see the real response from this server.</p>
+    <div class="toc">
+      <a href="#health">health</a>
+      <a href="#audit">audit</a>
+      <a href="#perf">perf</a>
+      <a href="#speed">speed</a>
+      <a href="#backlinks-get">backlinks&nbsp;GET</a>
+      <a href="#backlinks-post">backlinks&nbsp;POST</a>
+    </div>
+  </section>
+
+  <div id="backendSlot"></div>
+
+  <div class="endpoint" id="general">
+    <h2><span class="method">INFO</span><span class="path">Conventions</span></h2>
+    <p class="desc">Applies to every endpoint on this page.</p>
+    <ul class="field-doc" style="margin-left:18px">
+      <li>All responses are JSON — including errors, which always use <code>{"error": "message"}</code>, never an HTML error page.</li>
+      <li>URLs are flexible: <code>example.com</code>, <code>example.com.au</code> and full <code>https://…</code> all work.</li>
+      <li>Audits time out after <b>50s</b> server-side; plan client timeouts above that.</li>
+      <li><code>GET /api/audit</code> snapshots each host (last 10 runs) and returns a <code>drift</code> object when a previous audit exists.</li>
+      <li>On Cloudflare Workers the engine is identical, except DNS/TLS checks degrade to <code>info</code> and the backlink store needs KV.</li>
+    </ul>
+  </div>
+
+  <!-- ============ HEALTH ============ -->
+  <div class="endpoint" id="health">
+    <h2><span class="method">GET</span><span class="path">/api/health</span></h2>
+    <p class="desc">Liveness probe. Used by the web UI to detect a sleeping server and by <code>start.sh</code> to verify startup.</p>
+    <h3 class="sub">Parameters</h3>
+    <p class="field-doc">None.</p>
+    <h3 class="sub">Response</h3>
+    <pre class="shape">{
+  "ok": <b>true</b>,
+  "uptime": 42            <span class="c">// server uptime in whole seconds (Node)</span>
+}</pre>
+    <div class="note">On Cloudflare Workers the response additionally contains <code>"runtime": "cloudflare-workers"</code>.</div>
+    <div class="runner">
+      <div class="runner-row"><button class="btn" data-run="health">Run live example</button></div>
+      <div class="status-line" data-status></div>
+      <pre class="output" data-output hidden></pre>
+    </div>
+  </div>
+
+  <!-- ============ AUDIT ============ -->
+  <div class="endpoint" id="audit">
+    <h2><span class="method">GET</span><span class="path">/api/audit</span></h2>
+    <p class="desc">The full audit engine: fetches the page and runs 90+ checks across 8 weighted categories, returning scores, every individual check, SERP preview data, keywords, DNS/TLS/RDAP facts and drift vs the previous run.</p>
+    <h3 class="sub">Parameters</h3>
+    <table class="params">
+      <tr><th>Param</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>url</code></td><td><span class="req">required</span></td><td><p>Site or page to audit. Scheme optional.</p></td></tr>
+    </table>
+    <h3 class="sub">Response — top level</h3>
+    <pre class="shape">{
+  "requested": "example.com",        <span class="c">// what the caller sent</span>
+  "url": "https://example.com/",     <span class="c">// final URL after redirects</span>
+  "host": "example.com",
+  "fetchedAt": "2026-09-12T08:30:00.000Z",
+  "httpStatus": 200,
+  "ttfb": 231,                       <span class="c">// ms to first byte</span>
+  "pageSizeKb": 1,
+  "overall": 64,                     <span class="c">// 0–100, weighted across groups</span>
+  "groups": { ... },                 <span class="c">// 8 categories, see below</span>
+  "checks": [ ... ],                 <span class="c">// every check, see below</span>
+  "drift": { ... }                   <span class="c">// only when this host was audited before</span>
+}</pre>
+    <h3 class="sub"><code>groups</code> — the 8 scored categories</h3>
+    <pre class="shape">"groups": {
+  "seo":         { "label": "On-Page SEO",        "score": 61, "pass": 6, "warn": 5, "fail": 3, "total": 14 },
+  "geo":         { "label": "GEO / AI SEO",       ... },
+  "technical":   { "label": "Technical & Health", ... },   <span class="c">// weights: seo 22, geo 18, technical 16,</span>
+  "performance": { "label": "Speed & Performance", ... },   <span class="c">// performance 12, security 10, content 8,</span>
+  "security":    { "label": "Security & Trust",   ... },   <span class="c">// mobile 7, local 7</span>
+  "mobile":      { "label": "Mobile",             ... },
+  "content":     { "label": "Content Quality",    ... },
+  "local":       { "label": "Local SEO (Australia)", ... }
+}</pre>
+    <h3 class="sub"><code>checks[]</code> — every individual check</h3>
+    <pre class="shape">{
+  "group": "seo",              <span class="c">// key of groups above</span>
+  "name": "Title tag",
+  "status": "pass",            <span class="c">// "pass" | "warn" | "fail" | "info"</span>
+  "message": "Title is 44 characters — inside the 10–60 sweet spot.",
+  "fix": ""                    <span class="c">// plain-English fix, non-empty on warnings/failures</span>
+}</pre>
+    <h3 class="sub">Other notable fields</h3>
+    <ul class="field-doc" style="margin-left:18px">
+      <li><code>serp</code> — <code>{ title, description, url }</code> Google-snippet preview.</li>
+      <li><code>keywords</code> — top 12 as <code>{ word, count, density }</code> (density in %).</li>
+      <li><code>readability</code> — Flesch Reading Ease 0–100, or <code>null</code> if too little text.</li>
+      <li><code>aiCrawlers[]</code> — for 12 AI bots: <code>{ bot, vendor, blocked, rule }</code> from robots.txt.</li>
+      <li><code>ssl</code> — <code>{ issuer, validTo, daysLeft, protocol }</code> (https only).</li>
+      <li><code>dns</code> — <code>{ ip, ipv6, mx[], ns[] }</code>; <code>domain</code> — <code>{ registered, registrar, ageYears }</code> via RDAP.</li>
+      <li><code>states</code> — AU mentions, e.g. <code>{ "NSW": ["new south wales", "sydney"] }</code>.</li>
+      <li><code>links</code> — <code>{ internal, external, checked, broken: [{status, url}] }</code> (sampled).</li>
+      <li><code>headings</code> — first 30 heading texts.</li>
+    </ul>
+    <h3 class="sub"><code>drift</code> — vs the previous audit of the same host</h3>
+    <pre class="shape">"drift": {
+  "previousAt": "2026-09-12T06:58:52.246Z",
+  "previousOverall": 65,
+  "delta": -1,                       <span class="c">// overall change since last run</span>
+  "groups": { "technical": -5, ... } <span class="c">// per-category change</span>
+}</pre>
+    <div class="note gold">Heavy endpoint: the engine visits the target site, robots.txt, sitemap, and samples links. Budget several seconds; the hard limit is 50s.</div>
+    <div class="runner">
+      <div class="runner-row">
+        <input type="text" data-url value="example.com" placeholder="example.com.au" aria-label="URL to audit">
+        <button class="btn" data-run="audit">Run live audit</button>
+      </div>
+      <div class="status-line" data-status></div>
+      <pre class="output" data-output hidden></pre>
+    </div>
+  </div>
+
+  <!-- ============ PERF ============ -->
+  <div class="endpoint" id="perf">
+    <h2><span class="method">GET</span><span class="path">/api/perf</span></h2>
+    <p class="desc">Built-in performance probe — three real fetches of the HTML document from this server. No external API, always available.</p>
+    <h3 class="sub">Parameters</h3>
+    <table class="params">
+      <tr><th>Param</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>url</code></td><td><span class="req">required</span></td><td><p>Page to probe.</p></td></tr>
+    </table>
+    <h3 class="sub">Response</h3>
+    <pre class="shape">{
+  "samples": 3,          <span class="c">// runs that succeeded (up to 3)</span>
+  "ttfbAvg": 240,        <span class="c">// ms, average across runs</span>
+  "ttfbBest": 189,       <span class="c">// ms, fastest run</span>
+  "htmlKb": 22,          <span class="c">// HTML document size</span>
+  "encoding": "br"       <span class="c">// content-encoding: br | gzip | none</span>
+}</pre>
+    <p class="field-doc">Unreachable site → <code>400</code> with <code>{"error": "Could not reach that site."}</code>.</p>
+    <div class="runner">
+      <div class="runner-row">
+        <input type="text" data-url value="example.com" placeholder="example.com" aria-label="URL to probe">
+        <button class="btn" data-run="perf">Run live probe</button>
+      </div>
+      <div class="status-line" data-status></div>
+      <pre class="output" data-output hidden></pre>
+    </div>
+  </div>
+
+  <!-- ============ SPEED ============ -->
+  <div class="endpoint" id="speed">
+    <h2><span class="method">GET</span><span class="path">/api/speed</span></h2>
+    <p class="desc">Google Lighthouse run through the free PageSpeed Insights API. Rate-limited by Google — retry after a minute on 429-style errors. Optional <code>PAGESPEED_API_KEY</code> env var on the server raises quota.</p>
+    <h3 class="sub">Parameters</h3>
+    <table class="params">
+      <tr><th>Param</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>url</code></td><td><span class="req">required</span></td><td><p>Page to test.</p></td></tr>
+      <tr><td><code>strategy</code></td><td><span class="opt">optional</span></td><td><p><code>mobile</code> (default) or <code>desktop</code>.</p></td></tr>
+    </table>
+    <h3 class="sub">Response</h3>
+    <pre class="shape">{
+  "url": "https://example.com",
+  "strategy": "mobile",
+  "fetchTime": "2026-09-12T08:40:11.000Z",
+  "scores": {                       <span class="c">// 0–100 each, or null</span>
+    "performance": 92, "accessibility": 87,
+    "bestPractices": 83, "seo": 91
+  },
+  "metrics": {                      <span class="c">// value = ms (cls: unitless), display = human string</span>
+    "fcp":  { "value": 1230, "display": "1.2 s" },
+    "lcp":  { "value": 2010, "display": "2.0 s" },
+    "tbt":  { "value": 60,   "display": "60 ms" },
+    "cls":  { "value": 0.01, "display": "" },
+    "si":   { "value": 1540, "display": "1.5 s" },
+    "tti":  { "value": 2100, "display": "2.1 s" }
+  },
+  "lcpElement": "&lt;img src=\\"hero.webp\\"&gt;",   <span class="c">// snippet or null</span>
+  "opportunities": [                <span class="c">// up to 6, biggest saving first</span>
+    { "title": "Serve images in WebP", "saving": 450, "description": "…" }
+  ],
+  "reportUrl": "https://pagespeed.web.dev/analysis?url=…"  <span class="c">// full Google report</span>
+}</pre>
+    <div class="note gold">This endpoint proxies Google and can take 30–60s+; failures surface as JSON errors such as <code>Google PageSpeed rate limit reached…</code>.</div>
+    <div class="runner">
+      <div class="runner-row">
+        <input type="text" data-url value="example.com" placeholder="example.com" aria-label="URL to speed-test">
+        <button class="btn" data-run="speed">Run live speed test</button>
+        <button class="btn secondary" data-run="speed-desktop">desktop strategy</button>
+      </div>
+      <div class="status-line" data-status></div>
+      <pre class="output" data-output hidden></pre>
+    </div>
+  </div>
+
+  <!-- ============ BACKLINKS GET ============ -->
+  <div class="endpoint" id="backlinks-get">
+    <h2><span class="method">GET</span><span class="path">/api/backlinks</span></h2>
+    <p class="desc">The community backlink &amp; blogger directory. Newest listings first.</p>
+    <h3 class="sub">Parameters</h3>
+    <table class="params">
+      <tr><th>Param</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>state</code></td><td><span class="opt">optional</span></td><td><p>Filter: <code>NSW VIC QLD WA SA TAS ACT NT</code> (case-insensitive).</p></td></tr>
+      <tr><td><code>category</code></td><td><span class="opt">optional</span></td><td><p>Filter: <code>Blogger</code>, <code>Business</code>, <code>Directory</code>, <code>News / Media</code>, <code>Community</code>, <code>Other</code>.</p></td></tr>
+    </table>
+    <h3 class="sub">Response</h3>
+    <pre class="shape">{
+  "total": 4,                    <span class="c">// ALL listings, before filtering</span>
+  "listings": [
+    {
+      "id": "kpx8z1ab2c3d",
+      "name": "Sydney Garden Blog",
+      "website": "https://example.com.au",
+      "email": "hi@example.com.au",   <span class="c">// note: currently returned publicly</span>
+      "state": "NSW",
+      "category": "Blogger",
+      "description": "…",           <span class="c">// ≤ 400 chars</span>
+      "lookingFor": "…",            <span class="c">// ≤ 200 chars, may be ""</span>
+      "addedAt": "2026-09-12"
+    }
+  ]
+}</pre>
+    <div class="runner">
+      <div class="runner-row">
+        <button class="btn" data-run="backlinks">Run live example</button>
+        <button class="btn secondary" data-run="backlinks-filtered">filtered: NSW + Blogger</button>
+      </div>
+      <div class="status-line" data-status></div>
+      <pre class="output" data-output hidden></pre>
+    </div>
+  </div>
+
+  <!-- ============ BACKLINKS POST ============ -->
+  <div class="endpoint" id="backlinks-post">
+    <h2><span class="method">POST</span><span class="path">/api/backlinks</span></h2>
+    <p class="desc">Submit a listing. Body must be JSON. Stored in <code>data/backlinks.json</code> (cap: 500 listings; duplicate websites rejected by hostname).</p>
+    <h3 class="sub">Request body</h3>
+    <table class="params">
+      <tr><th>Field</th><th>Required</th><th>Validation</th></tr>
+      <tr><td><code>name</code></td><td><span class="req">required</span></td><td><p>2–80 chars.</p></td></tr>
+      <tr><td><code>website</code></td><td><span class="req">required</span></td><td><p>Valid URL, scheme optional, hostname must contain a dot.</p></td></tr>
+      <tr><td><code>email</code></td><td><span class="req">required</span></td><td><p>Valid email format.</p></td></tr>
+      <tr><td><code>state</code></td><td><span class="req">required</span></td><td><p>One of the 8 AU state/territory codes.</p></td></tr>
+      <tr><td><code>category</code></td><td><span class="opt">optional</span></td><td><p>Defaults to <code>Other</code> if not an exact category match.</p></td></tr>
+      <tr><td><code>description</code></td><td><span class="req">required</span></td><td><p>20–400 chars.</p></td></tr>
+      <tr><td><code>lookingFor</code></td><td><span class="opt">optional</span></td><td><p>≤ 200 chars.</p></td></tr>
+    </table>
+    <h3 class="sub">Responses</h3>
+    <pre class="shape">200  { "ok": true, "entry": { ...same shape as GET listings... } }
+400  { "error": "Please enter a valid website URL." }   <span class="c">// any validation failure</span>
+409  { "error": "That website is already listed." }
+400  { "error": "Directory is full at the moment — please try again later." }</pre>
+    <h3 class="sub">Example</h3>
+    <pre class="shape">curl -X POST http://localhost:3000/api/backlinks \
+  -H "Content-Type: application/json" \
+  -d '{"name":"My Site","website":"mysite.com.au","email":"me@mysite.com.au",
+       "state":"VIC","category":"Business","description":"Melbourne plumbing services directory listing.",
+       "lookingFor":"Guest posts"}'</pre>
+    <div class="note gold">No live button here on purpose — it would write a listing to this server's directory. Use the form on the <a href="/backlinks">Free Backlinks page</a> instead.</div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <div class="container">
+    <div class="cols">
+      <div><h4>OzSEO Toolkit</h4><p>Free audits, AI visibility and backlinks for Australian businesses.</p></div>
+      <div><h4>Tools</h4><p><a href="/">Website Audit</a><br><a href="/backlinks">Backlink Directory</a><br><a href="/skills">Skills Hub</a><br><a href="/api">API Reference</a></p></div>
+      <div><h4>Serving all of Australia</h4><p class="states-line">NSW &middot; VIC &middot; QLD &middot; WA &middot; SA &middot; TAS &middot; ACT &middot; NT</p></div>
+    </div>
+    <p style="margin-top:22px;font-size:12px;">&copy; 2026 OzSEO Toolkit &middot; built with free open-source software</p>
+  </div>
+</footer>
+
+<script>'use strict';
+/* ---------- backend reachability self-check (same pattern as other pages) ---------- */
+(async () => {
+  try {
+    const ctrl = new AbortController();
+    const kill = setTimeout(() => ctrl.abort(), 4000);
+    const r = await fetch('/api/health', { signal: ctrl.signal });
+    clearTimeout(kill);
+    const ct = r.headers.get('content-type') || '';
+    if (r.ok && ct.includes('application/json')) return;
+  } catch { /* fall through to banner */ }
+  const b = document.createElement('div');
+  b.className = 'backend-banner show';
+  b.innerHTML = '\u26A0\uFE0F The API is not connected. You are viewing the static preview, or the server fell asleep \u2014 open the LIVE PREVIEW of the running \u201COzSEO Toolkit\u201D process, or ask the assistant to restart the server, then refresh.';
+  document.getElementById('backendSlot').appendChild(b);
+})();
+
+/* ---------- live runner ---------- */
+const $ = (s, el) => (el || document).querySelector(s);
+const esc = (s) => { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; };
+
+const RUNS = {
+  'health':             () => ({ path: '/api/health' }),
+  'audit':              (url) => ({ path: '/api/audit?url=' + encodeURIComponent(url || 'example.com'), note: 'auditing \u2014 can take several seconds' }),
+  'perf':               (url) => ({ path: '/api/perf?url=' + encodeURIComponent(url || 'example.com'), note: 'probing 3\u00d7' }),
+  'speed':              (url) => ({ path: '/api/speed?url=' + encodeURIComponent(url || 'example.com'), note: 'Lighthouse via Google \u2014 30\u201360s+' }),
+  'speed-desktop':      (url) => ({ path: '/api/speed?url=' + encodeURIComponent(url || 'example.com') + '&strategy=desktop', note: 'Lighthouse via Google \u2014 30\u201360s+' }),
+  'backlinks':          () => ({ path: '/api/backlinks' }),
+  'backlinks-filtered': () => ({ path: '/api/backlinks?state=NSW&category=Blogger' }),
+};
+
+document.querySelectorAll('[data-run]').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const box = btn.closest('.runner');
+    const out = $('[data-output]', box);
+    const status = $('[data-status]', box);
+    const urlInput = $('[data-url]', box);
+    const spec = RUNS[btn.dataset.run](urlInput ? urlInput.value.trim() : '');
+
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = 'Running\u2026';
+    out.hidden = false;
+    out.textContent = 'Loading\u2026';
+    status.innerHTML = '';
+
+    const t0 = performance.now();
+    try {
+      const ctrl = new AbortController();
+      const kill = setTimeout(() => ctrl.abort(), 70000);
+      const r = await fetch(spec.path, { signal: ctrl.signal });
+      clearTimeout(kill);
+      const ms = Math.round(performance.now() - t0);
+      const body = await r.text();
+      let pretty = body;
+      try { pretty = JSON.stringify(JSON.parse(body), null, 2); } catch { /* keep raw */ }
+      out.textContent = pretty.length > 60000 ? pretty.slice(0, 60000) + '\n\u2026 (truncated)' : pretty;
+      status.innerHTML = '<span class="badge ' + (r.ok ? 'ok' : 'err') + '">' + r.status + ' ' + esc(r.statusText || '') + '</span>'
+        + '<span>' + ms + ' ms</span><span><code>' + esc(spec.path) + '</code></span>'
+        + (spec.note ? '<span>' + esc(spec.note) + '</span>' : '');
+    } catch (e) {
+      status.innerHTML = '<span class="badge err">network error</span><span>' + esc(e.name === 'AbortError' ? 'timed out after 70s' : e.message) + '</span>';
+      out.textContent = 'No response. Is the server running?';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  });
+});
+</script>
+</body>
+</html>

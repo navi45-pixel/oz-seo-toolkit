@@ -1,0 +1,23 @@
+{
+  "name": "oz-seo-toolkit",
+  "version": "1.0.0",
+  "main": "server.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "start": "bash start.sh",
+    "stop": "bash stop.sh",
+    "start:node": "node server.js",
+    "check:readme": "node scripts/check-readme.js",
+    "test": "node scripts/check-readme.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "express": "^5.2.1"
+  }
+}

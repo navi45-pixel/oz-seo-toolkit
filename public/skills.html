@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skills Hub — 25 integrated SEO skill modules | OzSEO Toolkit</title>
+<meta name="description" content="25 integrated SEO skill modules in one free audit for Australian businesses — auto-checks plus guided playbooks.">
+<style>:root {
+  --bg: #0a1210;
+  --bg2: #0e1a16;
+  --panel: #12211c;
+  --panel2: #16281f;
+  --border: #23443a;
+  --text: #e8f3ee;
+  --muted: #9db8ad;
+  --green: #2fd57b;
+  --green-dim: #1c8f53;
+  --gold: #f5c542;
+  --red: #ff6b6b;
+  --amber: #ffb020;
+  --blue: #5ec8f8;
+  --radius: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: radial-gradient(1200px 600px at 80% -10%, #14352a 0%, var(--bg) 55%) fixed, var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+}
+a { color: var(--green); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+
+/* ---------- header ---------- */
+header.site {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10, 18, 16, 0.88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.nav { display: flex; align-items: center; gap: 22px; height: 64px; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--text); }
+.logo:hover { text-decoration: none; }
+.logo-badge {
+  width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--green), #149a5b);
+  font-size: 17px; color: #04120a; font-weight: 900;
+}
+.nav-links { display: flex; gap: 6px; margin-left: auto; }
+.nav-links a {
+  color: var(--muted); padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 600;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--text); background: var(--panel2); text-decoration: none; }
+.free-pill {
+  background: rgba(245, 197, 66, 0.12); color: var(--gold);
+  border: 1px solid rgba(245, 197, 66, 0.35);
+  font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+}
+
+/* ---------- hero ---------- */
+.hero { padding: 64px 0 30px; text-align: center; }
+.hero h1 { font-size: clamp(28px, 4.6vw, 46px); line-height: 1.15; font-weight: 850; letter-spacing: -0.5px; }
+.hero h1 .grad {
+  background: linear-gradient(90deg, var(--green), #7ee2ae 45%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero p.sub { color: var(--muted); max-width: 720px; margin: 14px auto 0; font-size: 16px; }
+
+/* ---------- audit form ---------- */
+.audit-form {
+  display: flex; gap: 10px; max-width: 680px; margin: 30px auto 12px;
+  background: var(--panel); border: 1px solid var(--border);
+  padding: 10px; border-radius: 16px;
+}
+.audit-form input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text); font-size: 16px; padding: 10px 12px; min-width: 0;
+}
+.audit-form input::placeholder { color: #6d8a7f; }
+.btn {
+  background: linear-gradient(135deg, var(--green), #17a55f);
+  color: #05240f; font-weight: 800; font-size: 15px;
+  border: none; border-radius: 10px; padding: 12px 22px; cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease;
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+.btn:disabled { opacity: 0.55; cursor: wait; transform: none; }
+.btn.secondary {
+  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.chip {
+  font-size: 12.5px; color: var(--muted); background: var(--panel);
+  border: 1px solid var(--border); padding: 5px 12px; border-radius: 999px;
+}
+
+/* ---------- progress ---------- */
+.progress-box {
+  max-width: 680px; margin: 26px auto 0; display: none;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px 22px;
+  text-align: left;
+}
+.progress-box.show { display: block; }
+.progress-title { font-weight: 700; margin-bottom: 10px; display: flex; gap: 10px; align-items: center; }
+.spinner {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--border); border-top-color: var(--green);
+  animation: spin 0.8s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.progress-bar { height: 6px; background: var(--panel2); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; width: 5%; background: linear-gradient(90deg, var(--green), var(--gold)); border-radius: 99px; transition: width 0.6s ease; }
+.progress-step { color: var(--muted); font-size: 13px; margin-top: 8px; }
+
+/* ---------- backend-asleep banner ---------- */
+.backend-banner {
+  max-width: 680px; margin: 0 auto 18px; padding: 14px 18px;
+  background: rgba(255, 176, 32, 0.1); border: 1px solid rgba(255, 176, 32, 0.45);
+  color: #ffe9b3; border-radius: 12px; font-size: 14px; display: none; text-align: left;
+}
+.backend-banner.show { display: block; }
+
+/* ---------- error ---------- */
+.error-box {
+  max-width: 680px; margin: 20px auto; display: none;
+  background: rgba(255, 107, 107, 0.08); border: 1px solid rgba(255, 107, 107, 0.4);
+  color: #ffb3b3; border-radius: 12px; padding: 14px 18px; font-size: 14px;
+}
+.error-box.show { display: block; }
+
+/* ---------- results ---------- */
+#results { display: none; }
+#results.show { display: block; }
+.overall-card {
+  display: flex; flex-wrap: wrap; gap: 26px; align-items: center;
+  background: linear-gradient(135deg, var(--panel), var(--panel2));
+  border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin: 34px 0 20px;
+}
+.score-ring { position: relative; width: 150px; height: 150px; flex: 0 0 auto; margin: 0 auto; }
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring .ring-bg { stroke: #1d3a30; }
+.score-ring .ring-val { transition: stroke-dashoffset 1s ease; }
+.score-num {
+  position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+}
+.score-num b { font-size: 40px; font-weight: 850; }
+.score-num small { display: block; color: var(--muted); font-size: 11px; margin-top: -4px; }
+.overall-meta { flex: 1; min-width: 260px; }
+.overall-meta h2 { font-size: 22px; margin-bottom: 4px; word-break: break-all; }
+.overall-meta .url-line { color: var(--muted); font-size: 13px; margin-bottom: 12px; word-break: break-all; }
+.grade-pill { display: inline-block; font-weight: 800; padding: 3px 12px; border-radius: 999px; font-size: 13px; margin-left: 8px; vertical-align: middle; }
+.summary-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.stat {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 14px; font-size: 13px; color: var(--muted);
+}
+.stat b { color: var(--text); }
+
+/* group score grid */
+.group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-bottom: 30px; }
+.group-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px 18px; cursor: pointer; transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.group-card:hover { border-color: var(--green-dim); transform: translateY(-2px); }
+.group-card .gc-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.group-card h3 { font-size: 14.5px; font-weight: 700; }
+.mini-ring { position: relative; width: 46px; height: 46px; flex: 0 0 auto; }
+.mini-ring svg { transform: rotate(-90deg); }
+.mini-ring span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12.5px; font-weight: 800; }
+.group-card .gc-counts { display: flex; gap: 10px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.dot.pass { background: var(--green); } .dot.warn { background: var(--amber); } .dot.fail { background: var(--red); }
+
+/* section blocks */
+.section-block {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
+  margin-bottom: 18px; overflow: hidden;
+}
+.section-head {
+  display: flex; align-items: center; gap: 12px; padding: 18px 22px; cursor: pointer; user-select: none;
+}
+.section-head:hover { background: rgba(255,255,255,0.02); }
+.section-head h2 { font-size: 17px; font-weight: 750; flex: 1; }
+.section-score { font-weight: 800; font-size: 15px; }
+.section-chevron { transition: transform 0.2s ease; color: var(--muted); }
+.section-block.open .section-chevron { transform: rotate(180deg); }
+.section-body { display: none; padding: 4px 22px 20px; }
+.section-block.open .section-body { display: block; }
+
+.check {
+  display: flex; gap: 12px; padding: 11px 0; border-top: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+}
+.check:first-child { border-top: none; }
+.check-icon { width: 22px; height: 22px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center; font-size: 12px; font-weight: 900; margin-top: 1px; }
+.check-icon.pass { background: rgba(47,213,123,0.15); color: var(--green); }
+.check-icon.warn { background: rgba(255,176,32,0.15); color: var(--amber); }
+.check-icon.fail { background: rgba(255,107,107,0.15); color: var(--red); }
+.check-icon.info { background: rgba(94,200,248,0.12); color: var(--blue); }
+.check-body b { display: block; font-size: 14px; }
+.check-body .msg { color: var(--muted); font-size: 13.5px; word-break: break-word; }
+.check-body .fix { color: #ffe9b3; font-size: 13px; margin-top: 3px; }
+.check-body .fix::before { content: "\2192 Fix: "; font-weight: 700; color: var(--gold); }
+
+/* SERP preview */
+.serp {
+  background: #fff; color: #202124; border-radius: 14px; padding: 20px 24px; margin: 12px 0 26px;
+  max-width: 640px;
+}
+.serp .serp-url { font-size: 13px; color: #202124; display: flex; align-items: center; gap: 8px; }
+.serp .serp-url .fav { width: 22px; height: 22px; border-radius: 50%; background: #f1f3f4; display: grid; place-items: center; font-size: 11px; color: #5f6368; }
+.serp .serp-url span.u { color: #4d5156; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 480px; }
+.serp .serp-title { color: #1a0dab; font-size: 20px; margin: 6px 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.serp .serp-desc { color: #4d5156; font-size: 14px; }
+.serp-note { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+
+/* keywords / tables */
+.kw-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+.kw-pill { background: var(--panel2); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; font-size: 13px; }
+.kw-pill b { color: var(--green); }
+.kw-pill small { color: var(--muted); }
+
+/* speed panel */
+#speedPanel { display: none; }
+#speedPanel.show { display: block; }
+.speed-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 14px 0; }
+.metric-card { background: var(--panel2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
+.metric-card b { display: block; font-size: 22px; font-weight: 850; }
+.metric-card small { color: var(--muted); font-size: 12px; }
+.metric-card.good b { color: var(--green); }
+.metric-card.mid b { color: var(--amber); }
+.metric-card.bad b { color: var(--red); }
+.opps { margin-top: 8px; }
+.opp { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-top: 1px solid rgba(255,255,255,0.05); font-size: 13.5px; }
+.opp span.saving { color: var(--gold); font-weight: 700; white-space: nowrap; }
+.psi-note { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+
+/* quick tools */
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.tool-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px;
+  transition: border-color 0.15s ease, transform 0.15s ease; display: block; color: var(--text);
+}
+.tool-card:hover { border-color: var(--green-dim); transform: translateY(-2px); text-decoration: none; }
+.tool-card h3 { font-size: 15px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.tool-card p { color: var(--muted); font-size: 13px; }
+.tool-card .tag { margin-left: auto; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: rgba(47,213,123,0.13); color: var(--green); }
+.tool-card .tag.ext { background: rgba(94,200,248,0.12); color: var(--blue); }
+
+/* states */
+.states-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.state-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+.state-card h3 { font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.state-code { background: linear-gradient(135deg, var(--green), #149a5b); color: #05240f; font-weight: 900; font-size: 11px; padding: 2px 8px; border-radius: 6px; }
+.state-card p { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.state-card .cities { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.state-card .cities span { font-size: 11.5px; background: var(--panel2); border: 1px solid var(--border); border-radius: 99px; padding: 2px 9px; color: var(--muted); }
+
+/* open source */
+.oss-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.oss-item { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; font-size: 13px; color: var(--muted); }
+.oss-item b { color: var(--text); display: block; font-size: 14px; margin-bottom: 2px; }
+
+/* section titles */
+.section-title { margin: 46px 0 6px; font-size: 24px; font-weight: 800; letter-spacing: -0.3px; }
+.section-sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; max-width: 760px; }
+
+/* footer */
+footer.site { border-top: 1px solid var(--border); margin-top: 60px; padding: 34px 0; color: var(--muted); font-size: 13px; }
+footer.site .cols { display: flex; flex-wrap: wrap; gap: 26px; justify-content: space-between; }
+footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.6px; }
+footer.site .states-line { margin-top: 18px; line-height: 1.8; }
+
+/* backlinks page */
+.form-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 26px;
+}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid .full { grid-column: 1 / -1; }
+label.field { display: block; font-size: 13px; font-weight: 700; color: var(--muted); }
+label.field input, label.field select, label.field textarea {
+  width: 100%; margin-top: 6px; background: var(--bg2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; font-size: 14px;
+  font-family: inherit; outline: none;
+}
+label.field input:focus, label.field select:focus, label.field textarea:focus { border-color: var(--green-dim); }
+.form-msg { margin-top: 12px; font-size: 14px; }
+.form-msg.ok { color: var(--green); } .form-msg.err { color: var(--red); }
+
+.listing {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px;
+}
+.listing h3 { font-size: 15.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.listing .meta { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+.badge { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--border); color: var(--muted); }
+.badge.state { background: rgba(47,213,123,0.13); color: var(--green); border-color: rgba(47,213,123,0.3); }
+.badge.cat { background: rgba(245,197,66,0.1); color: var(--gold); border-color: rgba(245,197,66,0.3); }
+.listing p { color: var(--muted); font-size: 13.5px; }
+.listing .lf { margin-top: 8px; font-size: 13px; color: #ffe9b3; }
+.filters { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 18px; }
+.filters select { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 14px; }
+.listings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.empty-note { color: var(--muted); background: var(--panel); border: 1px dashed var(--border); border-radius: 14px; padding: 26px; text-align: center; font-size: 14px; }
+
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 20px 0 30px; }
+.step { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+.step .n { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--green), #149a5b); color: #05240f; font-weight: 900; display: grid; place-items: center; margin-bottom: 10px; }
+.step h3 { font-size: 15px; margin-bottom: 4px; }
+.step p { font-size: 13px; color: var(--muted); }
+
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .audit-form { flex-direction: column; }
+  .audit-form .btn { width: 100%; }
+  .nav-links a { padding: 8px 8px; }
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232fd57b'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' font-family='Arial' font-weight='bold' fill='%2305240f'%3EOz%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site">
+  <div class="container nav">
+    <a class="logo" href="/"><span class="logo-badge">Oz</span> OzSEO Toolkit</a>
+    <nav class="nav-links">
+      <a href="/">Free Audit</a>
+      <a href="/backlinks">Free Backlinks</a>
+      <a href="/skills" class="active">Skills Hub</a>
+      <a href="/api">API</a>
+    </nav>
+    <span class="free-pill">100% FREE &bull; No sign-up</span>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <h1>Skills Hub — <span class="grad">25 integrated SEO skills</span></h1>
+    <p class="sub"><b>AUTO</b> skills run inside every free audit; <b>PLAYBOOK</b> skills are guided checklists you can work through. All knowledge is built into this toolkit.</p>
+  </section>
+
+  <div class="tools-grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+
+    <div class="tool-card" style="cursor:default"><h3>&#9881;&#65039; seo-technical <span class="tag">AUTO</span></h3><p>9-category technical audit: crawlability, indexability, security headers, URL structure, mobile, Core Web Vitals, JS rendering, Googlebot 2MB limit, redirect chains, mixed content, AI-crawler management.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#129302; seo-geo <span class="tag">AUTO</span></h3><p>AI Search / GEO: citability signals (question headings, quotable definitions, statistics, lists), E-E-A-T bylines, freshness, training-vs-citability bot taxonomy (OAI-SearchBot, Claude-SearchBot&hellip;).</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128205; seo-local <span class="tag">AUTO</span></h3><p>Local pack factors: NAP, click-to-call, opening hours, review markup, service-area vs brick-and-mortar detection, Australian state/city mentions, ABN, geo meta.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#129513; seo-schema <span class="tag">AUTO</span></h3><p>Structured data: JSON-LD detection, deprecated types (HowTo, SpecialAnnouncement&hellip;), Microdata/RDFa fallback, FAQ rich-result retirement note, Product/Offer completeness.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128506;&#65039; seo-sitemap <span class="tag">AUTO</span></h3><p>Sitemap discovery via robots.txt + fallbacks, URL count, lastmod coverage, legacy changefreq/priority flagging.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#127760; seo-hreflang <span class="tag">AUTO</span></h3><p>Hreflang validation: ISO code correctness (flags en-uk), self-reference, x-default, https consistency.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128247; seo-images <span class="tag">AUTO</span></h3><p>Image SEO: alt coverage, width/height for CLS, WebP/AVIF adoption, descriptive filenames.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#9997;&#65039; seo-content <span class="tag">AUTO</span></h3><p>Content quality: word count, readability, keyword stuffing, title&#8596;H1 alignment, Who/How/Why helpful-content proxies, AI-citation front-loading.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128171; seo-sxo <span class="tag">AUTO</span></h3><p>Search Experience Optimisation: primary CTA presence, page-type/keyword intent fit guidance.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128722; seo-ecommerce <span class="tag">AUTO</span></h3><p>Shop detection (Shopify/WooCommerce), Product/Offer schema with priceCurrency &amp; availability.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128506; seo-maps <span class="tag">AUTO</span></h3><p>Maps intelligence: Google Maps embeds, review widgets (Trustpilot/ProductReview/Tripadvisor), GBP integration signals.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128202; seo-audit <span class="tag">AUTO</span></h3><p>The scoring framework itself: weighted categories, critical/high/medium priority fixes, plain-English recommendations.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128257; seo-drift <span class="tag">AUTO</span></h3><p>Change detection: every audit is snapshotted; re-runs show score &amp; category drift over time (&#8220;88 &#8594; 92, +4&#8221;).</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128279; seo-backlinks <span class="tag" style="background:rgba(245,197,66,.13);color:var(--gold)">PAGE</span></h3><p>Free backlink strategy: our AU directory + curated free sources (GBP, Bing Places, TrueLocal, Qwoted, Featured&hellip;), safety rules, AI-era link earning.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#127919; seo / master skill <span class="tag" style="background:rgba(245,197,66,.13);color:var(--gold)">HUB</span></h3><p>The router: decides which sub-skills apply to your task and in what order &#8212; mirrored by our audit running every relevant module at once.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#129518; seo-cluster <span class="tag ext">PLAYBOOK</span></h3><p>Topical authority: map 1 pillar + 6&#8211;12 cluster pages per money topic; interlink hub-and-spoke; one search intent per page.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128373;&#65039; seo-competitor-pages <span class="tag ext">PLAYBOOK</span></h3><p>Reverse-engineer rivals: list their top 10 pages, classify page type, note angle/gaps, then brief a better page (use with seo-content-brief).</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128221; seo-content-brief <span class="tag ext">PLAYBOOK</span></h3><p>Before writing: define intent, target question headings (mirror our &#8220;question headings&#8221; check), word range, internal links, schema plan, citable stats.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128200; seo-plan <span class="tag ext">PLAYBOOK</span></h3><p>90-day roadmap: weeks 1&#8211;2 technical fixes from your audit, 3&#8211;6 content clusters, 7&#8211;12 links + local citations; review drift weekly.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128257; seo-flow <span class="tag ext">PLAYBOOK</span></h3><p>End-to-end workflow: audit &#8594; plan &#8594; clusters &#8594; briefs &#8594; content &#8594; schema &#8594; links &#8594; drift review. Follow in order for compounding wins.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128196; seo-page <span class="tag ext">PLAYBOOK</span></h3><p>Single-page optimisation loop: title/desc CTR rewrite, H1 with intent, answer-first intro, FAQ block, internal links in/out, schema, then re-audit here.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#9881;&#65039; seo-programmatic <span class="tag ext">PLAYBOOK</span></h3><p>Template pages (suburb &#215; service): &gt;60% unique text per page, pass the &#8220;swap test&#8221;, unique photos/FAQs, else risk doorway-page penalties.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#127912; seo-visual / seo-image-gen <span class="tag ext">PLAYBOOK</span></h3><p>Cover images, OG art and diagrams: generate branded visuals, compress to WebP, add width/height + descriptive filenames before upload.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128200; seo-google <span class="tag ext">PLAYBOOK</span></h3><p>Free Google stack: Search Console, PSI/CrUX, Rich Results Test, Trends, GBP, Business Profile posts &#8212; link out from our audit page quick tools.</p></div>
+
+    <div class="tool-card" style="cursor:default"><h3>&#128202; seo-dataforseo <span class="tag ext">OPTIONAL</span></h3><p>Optional paid-data add-on (volumes, backlink DBs, tech detection) if you ever want it. Not needed here &#8212; this toolkit stays 100% free.</p></div>
+  </div>
+
+  <h2 class="section-title">How the integration works</h2>
+  <p class="section-sub">Every <b>AUTO</b> skill above contributes live checks to your audit score. <b>PLAYBOOK</b> skills are strategy workflows that need human judgment &#8212; we surface them as checklists so nothing from the knowledge base is left out.</p>
+</main>
+
+<footer class="site">
+  <div class="container">
+    <div class="cols">
+      <div><h4>OzSEO Toolkit</h4><p>Free audits, AI visibility and backlinks for Australian businesses.</p></div>
+      <div><h4>Tools</h4><p><a href="/">Website Audit</a><br><a href="/backlinks">Backlink Directory</a><br><a href="/skills">Skills Hub</a><br><a href="/api">API Reference</a></p></div>
+      <div><h4>Serving all of Australia</h4><p class="states-line">NSW &middot; VIC &middot; QLD &middot; WA &middot; SA &middot; TAS &middot; ACT &middot; NT</p></div>
+    </div>
+    <p style="margin-top:22px;font-size:12px;">&copy; 2026 OzSEO Toolkit &middot; built with free open-source software</p>
+  </div>
+</footer>
+</body>
+</html>

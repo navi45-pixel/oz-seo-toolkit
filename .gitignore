@@ -1,0 +1,16 @@
+node_modules/
+*.log
+.DS_Store
+.env
+.wrangler/
+.dev.vars
+npm-debug.log*
+
+# User-submitted data — never publish personal data to the repo.
+# The server recreates empty stores on first run (data/ dirs are auto-created).
+data/backlinks.json
+data/backlinks.local.json
+data/snapshots.json
+*.local.json
+backlinks.json
+.local-backup/

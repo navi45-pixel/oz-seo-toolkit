@@ -1,0 +1,75 @@
+name: CI OzSEO Toolkit
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: Launcher + API smoke test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Keep README claims (check count, Skills Hub module breakdown) in sync
+      # with the code — fails the build when either side drifts.
+      - name: README-vs-code consistency check
+        run: npm run check:readme
+
+      # The real launcher: heals deps if wiped, neutralizes a bad PORT env,
+      # takes over a busy port, and blocks until /api/health answers.
+      - name: Start via launcher (start.sh)
+        run: bash start.sh
+
+      - name: Smoke test /api/health
+        run: |
+          body=$(curl -sf --max-time 10 http://localhost:3000/api/health)
+          echo "health: $body"
+          echo "$body" | jq -e '.ok == true' > /dev/null
+
+      # A REAL end-to-end audit: exercises the engine (HTML fetch, parsing,
+      # all 8 scoring categories, drift snapshot) through the running server.
+      - name: Smoke test real audit
+        run: |
+          body=$(curl -sf --max-time 90 "http://localhost:3000/api/audit?url=example.com")
+          echo "$body" | jq -e '(.overall | type) == "number" and .overall >= 0 and .overall <= 100' > /dev/null
+          echo "$body" | jq -e '(.groups | keys | length) == 8' > /dev/null
+          echo "$body" | jq -e '.groups.seo.score != null' > /dev/null
+          echo "audit ok — overall: $(echo "$body" | jq '.overall'), host: $(echo "$body" | jq -r '.host')"
+
+      - name: Smoke test pages
+        run: |
+          for p in / /backlinks /skills /api; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "http://localhost:3000$p")
+            echo "$p -> $code"
+            [ "$code" = "200" ] || { echo "FAIL: $p returned $code"; exit 1; }
+          done
+
+      - name: Stop server
+        if: always()
+        run: npm stop
+
+      - name: Upload server log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-log
+          path: server.log
+          if-no-files-found: ignore
