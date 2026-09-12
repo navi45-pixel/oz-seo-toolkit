@@ -1,8 +1,11 @@
 name: Deploy OzSEO Toolkit to Cloudflare Workers
 
+# Manual trigger only: push-triggered deploys are handled by Cloudflare
+# Workers Builds (Cloudflare's Git integration, which clones this repo
+# directly). This workflow remains as an alternative path — before running
+# it, set the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID repo secrets
+# (gh secret set CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID).
 on:
-  push:
-    branches: [main, master]
   workflow_dispatch: {}
 
 jobs:

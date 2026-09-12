@@ -55,7 +55,20 @@ Use `PORT=8080 npm start` to run on a different port; check `server.log` if anyt
 `npm stop` stops the server again — it finds whatever is listening on the port (with the same `PORT` env override), tries a graceful close first, then force-kills if needed. `start.sh` uses the same logic (`stop.sh` holds the shared helpers) to take over a port left busy by a stale instance.
 
 ## Deploy to Cloudflare Workers
-The same audit engine runs on Cloudflare (`worker.js` + `wrangler.toml`):
+The same audit engine runs on Cloudflare (`worker.js` + `wrangler.toml`).
+
+**Push deploys are handled by Cloudflare Workers Builds** (Cloudflare's Git
+integration — it clones the repo itself and runs `npx wrangler deploy`; no
+GitHub secrets needed). Connect the repo once at dash.cloudflare.com →
+Workers & Pages → this Worker → Settings → Build, and every push deploys.
+
+The `.github/workflows/deploy.yml` workflow is **manual-trigger only**
+(Actions tab → run manually) as an alternative path; it requires the
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repo secrets. CI
+(`ci.yml`) runs on every push and includes a `wrangler deploy --dry-run`
+bundling gate so deploy-breaking changes can't land.
+
+Deploy by hand from a local checkout with:
 ```bash
 npx wrangler deploy
 ```
