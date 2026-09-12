@@ -10,6 +10,8 @@
     "stop": "bash stop.sh",
     "start:node": "node server.js",
     "check:readme": "node scripts/check-readme.js",
+    "smoke": "node scripts/smoke.js",
+    "deploy": "bash deploy.sh",
     "test": "node scripts/check-readme.js"
   },
   "keywords": [],

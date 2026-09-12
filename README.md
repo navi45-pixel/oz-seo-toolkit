@@ -54,6 +54,8 @@ Use `PORT=8080 npm start` to run on a different port; check `server.log` if anyt
 
 `npm stop` stops the server again — it finds whatever is listening on the port (with the same `PORT` env override), tries a graceful close first, then force-kills if needed. `start.sh` uses the same logic (`stop.sh` holds the shared helpers) to take over a port left busy by a stale instance.
 
+`npm run smoke` runs the smoke tests (`scripts/smoke.js`, dependency-free) against a running instance — defaults to `http://localhost:3000`, or pass any URL: `npm run smoke -- https://<worker>.workers.dev`.
+
 ## Deploy to Cloudflare Workers
 The same audit engine runs on Cloudflare (`worker.js` + `wrangler.toml`).
 
@@ -70,8 +72,14 @@ bundling gate so deploy-breaking changes can't land.
 
 Deploy by hand from a local checkout with:
 ```bash
-npx wrangler deploy
+npm run deploy               # deploy + automatic smoke test of the live URL
+npx wrangler deploy          # deploy only
 ```
+`npm run deploy` runs `deploy.sh`: it deploys, extracts the live workers.dev
+URL from wrangler's output, then runs the shared smoke tests against it
+(`--no-smoke` to skip; `BASE_URL=https://... npm run deploy` smoke-tests a
+different URL instead of the freshly deployed one). CI runs the same
+`scripts/smoke.js`, so local, CI, and post-deploy checks cannot drift.
 - Pages (`/`, `/backlinks`, `/skills`) are served from `public/` as Static Assets.
 - `/api/audit`, `/api/perf`, `/api/speed`, `/api/health` run the identical engine.
 - Deterministic checks (HTML parsing, schema, hreflang, robots, links, speed probe)
