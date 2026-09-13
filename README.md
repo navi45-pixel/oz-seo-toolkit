@@ -54,7 +54,10 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
   chrome, links back to the tools, `noindex`) with a true 404 status — plus a
   client-side suggestion box that fuzzy-matches the requested path against the
   four real pages (exact keyword, plural/singular and bigram typo distance)
-  and offers the closest one when confident; unknown
+  and offers the closest one when confident — the route map lives in
+  `data-sugg*` attributes on the nav anchors and `npm run check:routes`
+  (part of `npm test`) fails CI if it ever drifts from the pages in
+  `public/`, the server routes or the sitemap; unknown
   `/api/*` routes get a JSON 404 error — identical behaviour on Node (catch-all
   middleware) and Workers (asset-miss fallback)
 - Share & trust hygiene: every page carries Open Graph/Twitter cards (using

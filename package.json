@@ -10,11 +10,12 @@
     "stop": "bash stop.sh",
     "start:node": "node server.js",
     "check:readme": "node scripts/check-readme.js",
+    "check:routes": "node scripts/check-404-routes.js",
     "smoke": "node scripts/smoke.js",
     "deploy": "bash deploy.sh",
     "gen:sitemap": "node scripts/gen-sitemap.js",
     "sync:kv": "node scripts/sync-kv.js",
-    "test": "node scripts/check-readme.js"
+    "test": "node scripts/check-readme.js && node scripts/check-404-routes.js"
   },
   "keywords": [],
   "author": "",

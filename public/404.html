@@ -96,10 +96,10 @@ footer.site { border-top: 1px solid var(--border); padding: 26px 0; color: var(-
   <div class="container nav">
     <a class="logo" href="/"><span class="logo-badge">Oz</span> OzSEO Toolkit</a>
     <nav class="nav-links">
-      <a href="/">Free Audit</a>
-      <a href="/backlinks">Free Backlinks</a>
-      <a href="/skills">Skills Hub</a>
-      <a href="/api">API</a>
+      <a href="/" data-sugg="the Free Website Audit" data-sugg-why="a full audit across SEO, AI/GEO, speed, security &amp; local SEO" data-sugg-kw="audit,seo,speed,checker,check,home,lighthouse,geo,website">Free Audit</a>
+      <a href="/backlinks" data-sugg="the Free Backlinks Directory" data-sugg-why="list your site free and find Australian bloggers" data-sugg-kw="backlink,backlinks,link,links,directory,blogger,bloggers,guest,listing,freebies">Free Backlinks</a>
+      <a href="/skills" data-sugg="the Skills Hub" data-sugg-why="25 integrated SEO skill modules and playbooks" data-sugg-kw="skills,skill,modules,module,playbook,playbooks,hub,training,courses">Skills Hub</a>
+      <a href="/api" data-sugg="the API Reference" data-sugg-why="every endpoint, parameter and response shape, live" data-sugg-kw="api,endpoint,endpoints,reference,docs,documentation,json,rest">API</a>
     </nav>
     <span class="free-pill">100% FREE &bull; No sign-up</span>
   </div>
@@ -132,13 +132,21 @@ footer.site { border-top: 1px solid var(--border); padding: 26px 0; color: var(-
 (function () {
   'use strict';
   // Suggest the closest real page for the requested (404) path. Purely
-  // client-side so Node and Workers behave identically.
-  var PAGES = [
-    { path: '/', title: 'the Free Website Audit', why: 'full audit across SEO, AI/GEO, speed, security & local SEO', kw: ['audit', 'seo', 'speed', 'checker', 'check', 'home', 'lighthouse', 'geo', 'website'] },
-    { path: '/backlinks', title: 'the Free Backlinks Directory', why: 'list your site free and find Australian bloggers', kw: ['backlink', 'backlinks', 'link', 'links', 'directory', 'blogger', 'bloggers', 'guest', 'listing', 'freebies'] },
-    { path: '/skills', title: 'the Skills Hub', why: '25 integrated SEO skill modules and playbooks', kw: ['skills', 'skill', 'modules', 'module', 'playbook', 'playbooks', 'hub', 'training', 'courses'] },
-    { path: '/api', title: 'the API Reference', why: 'every endpoint, parameter and response shape, live', kw: ['api', 'endpoint', 'endpoints', 'reference', 'docs', 'documentation', 'json', 'rest'] },
-  ];
+  // client-side so Node and Workers behave identically. The route list is
+  // read from the nav anchors' data attributes — the same links that render
+  // the site chrome — so suggestions can never drift from the real routes.
+  var anchors = document.querySelectorAll('.nav-links a[href][data-sugg-kw]');
+  if (!anchors.length) return; // nav/map missing — stay generic, never crash
+  var PAGES = [];
+  for (var i = 0; i < anchors.length; i++) {
+    var a = anchors[i];
+    PAGES.push({
+      path: a.getAttribute('href'),
+      title: a.getAttribute('data-sugg') || a.textContent.trim(),
+      why: a.getAttribute('data-sugg-why') || '',
+      kw: (a.getAttribute('data-sugg-kw') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean),
+    });
+  }
   var asked = location.pathname.toLowerCase();
   var words = asked.split(/[^a-z0-9]+/).filter(Boolean);
   if (!words.length) return; // '/' never 404s
