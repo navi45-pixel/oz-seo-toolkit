@@ -222,6 +222,14 @@ app.post('/api/backlinks', ah(async (req, res) => {
   res.json({ ok: true, entry: publicListing(entry) });
 }));
 
+// ---------- 404s: branded page for URLs, JSON for API paths ----------
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: `No such endpoint: ${req.method} ${req.path}` });
+  }
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
+
 // ---------- JSON error middleware: every failure returns JSON, never HTML/empty ----------
 app.use((err, req, res, _next) => {
   const status = err.status || err.statusCode || 400;

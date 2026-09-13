@@ -14,7 +14,8 @@
  *   3. Backlinks API shape (no email leak) + pagination + cursor contracts
  *   4. Moderation endpoints are never publicly readable
  *   5. robots.txt and sitemap.xml exist and cross-reference each other
- *   6. Pages /, /backlinks, /skills, /api all return 200
+ *   6. Unknown pages get the branded HTML 404; unknown API routes get JSON
+ *   7. Pages /, /backlinks, /skills, /api all return 200
  */
 'use strict';
 
@@ -153,7 +154,30 @@ async function main() {
     report('GET /sitemap.xml', false, e.message);
   }
 
-  // 5. Pages
+  // 5. Branded 404s: unknown pages get the styled 404 page, unknown API
+  //    routes get JSON — both must be real 404 statuses.
+  try {
+    const res = await fetch(BASE + '/definitely-not-a-page', { signal: AbortSignal.timeout(20_000), redirect: 'manual' });
+    const text = await res.text();
+    const branded = res.status === 404 && text.includes('OzSEO Toolkit') && (res.headers.get('content-type') || '').includes('text/html');
+    report('GET /definitely-not-a-page (branded 404)', branded,
+      branded ? 'status 404, HTML page with site chrome' : `status ${res.status}, content-type ${res.headers.get('content-type')}`);
+  } catch (e) {
+    report('GET /definitely-not-a-page (branded 404)', false, e.message);
+  }
+  try {
+    const res = await fetch(BASE + '/api/definitely-not-an-endpoint', { signal: AbortSignal.timeout(20_000) });
+    const text = await res.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch { /* keep null */ }
+    const jsonOk = res.status === 404 && json && typeof json.error === 'string';
+    report('GET /api/definitely-not-an-endpoint (JSON 404)', jsonOk,
+      jsonOk ? 'status 404, JSON error' : `status ${res.status}, body: ${text.slice(0, 60)}`);
+  } catch (e) {
+    report('GET /api/definitely-not-an-endpoint (JSON 404)', false, e.message);
+  }
+
+  // 6. Pages
   for (const p of ['/', '/backlinks', '/skills', '/api']) {
     try {
       const res = await fetch(BASE + p, { signal: AbortSignal.timeout(20_000) });

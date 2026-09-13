@@ -50,6 +50,10 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
   which `deploy.sh` runs automatically before every deploy (note: deploys
   triggered from the Cloudflare dashboard's Workers Builds skip this, so run
   `npm run deploy` locally after page changes to keep dates fresh)
+- Branded 404s: unknown page URLs serve a styled `public/404.html` (site
+  chrome, links back to the tools, `noindex`) with a true 404 status; unknown
+  `/api/*` routes get a JSON 404 error — identical behaviour on Node (catch-all
+  middleware) and Workers (asset-miss fallback)
 
 ## Built entirely on free GitHub repos & free APIs
 - [Express](https://github.com/expressjs/express) — web server

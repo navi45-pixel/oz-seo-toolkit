@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Page not found (404) | OzSEO Toolkit</title>
+<meta name="description" content="That page doesn't exist — run a free website audit, browse the backlink directory or explore the Skills Hub instead.">
+<style>:root {
+  --bg: #0a1210;
+  --bg2: #0e1a16;
+  --panel: #12211c;
+  --panel2: #16281f;
+  --border: #23443a;
+  --text: #e8f3ee;
+  --muted: #9db8ad;
+  --green: #2fd57b;
+  --gold: #f5c542;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: radial-gradient(1200px 600px at 80% -10%, #14352a 0%, var(--bg) 55%) fixed, var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+a { color: var(--green); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 1160px; margin: 0 auto; padding: 0 20px; width: 100%; }
+
+header.site {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10, 18, 16, 0.88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.nav { display: flex; align-items: center; gap: 22px; height: 64px; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--text); }
+.logo:hover { text-decoration: none; }
+.logo-badge {
+  width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--green), #149a5b);
+  font-size: 17px; color: #04120a; font-weight: 900;
+}
+.nav-links { display: flex; gap: 6px; margin-left: auto; }
+.nav-links a { color: var(--muted); padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; }
+.nav-links a:hover { color: var(--text); background: var(--panel2); text-decoration: none; }
+.free-pill {
+  background: rgba(245, 197, 66, 0.12); color: var(--gold);
+  border: 1px solid rgba(245, 197, 66, 0.35);
+  font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+}
+@media (max-width: 760px) { .nav-links { display: none; } }
+
+main { flex: 1; display: grid; place-items: center; text-align: center; padding: 60px 20px; }
+.code {
+  font-size: clamp(96px, 22vw, 190px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -4px;
+  background: linear-gradient(90deg, var(--green), #7ee2ae 45%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+main h1 { font-size: clamp(22px, 3.4vw, 32px); font-weight: 850; margin-top: 10px; letter-spacing: -0.4px; }
+main p.sub { color: var(--muted); max-width: 560px; margin: 14px auto 0; font-size: 16px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px; }
+.btn {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--green), #17a55f);
+  color: #05240f; font-weight: 800; font-size: 15px;
+  border-radius: 10px; padding: 12px 22px;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.btn:hover { transform: translateY(-1px); filter: brightness(1.08); text-decoration: none; }
+.btn.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+.hint { margin-top: 26px; font-size: 13px; color: var(--muted); }
+.hint code { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; font-size: 12px; color: var(--text); }
+
+footer.site { border-top: 1px solid var(--border); padding: 26px 0; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="container nav">
+    <a class="logo" href="/"><span class="logo-badge">Oz</span> OzSEO Toolkit</a>
+    <nav class="nav-links">
+      <a href="/">Free Audit</a>
+      <a href="/backlinks">Free Backlinks</a>
+      <a href="/skills">Skills Hub</a>
+      <a href="/api">API</a>
+    </nav>
+    <span class="free-pill">100% FREE &bull; No sign-up</span>
+  </div>
+</header>
+
+<main>
+  <div>
+    <div class="code">404</div>
+    <h1>This page wandered off into the outback</h1>
+    <p class="sub">The link is broken or the page never existed — but every free tool is one click away.</p>
+    <div class="actions">
+      <a class="btn" href="/">Run a free audit</a>
+      <a class="btn secondary" href="/backlinks">Browse backlinks</a>
+    </div>
+    <p class="hint">Trying the API? Every endpoint is documented at <code><a href="/api">/api</a></code>.</p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="container">
+    &copy; 2026 OzSEO Toolkit &middot; free website audits, AI search visibility checks and a free Australian backlink directory
+  </div>
+</footer>
+</body>
+</html>

@@ -294,11 +294,15 @@ export default {
       if (p === '/backlinks') p = '/backlinks.html';
       if (p === '/skills') p = '/skills.html';
       if (p === '/api') p = '/api.html';
-      if (p !== url.pathname) {
-        url.pathname = p;
-        return env.ASSETS.fetch(new Request(url.toString(), request));
+      url.pathname = p;
+      const assetRes = await env.ASSETS.fetch(new Request(url.toString(), request));
+      if (assetRes.status !== 404) return assetRes;
+      // Missing asset: JSON 404 for API paths, branded 404 page otherwise.
+      if (url.pathname.startsWith('/api/')) {
+        return json({ error: `No such endpoint: ${request.method} ${url.pathname}` }, 404);
       }
-      return env.ASSETS.fetch(request);
+      const nf = await env.ASSETS.fetch(new Request(new URL('/404', url).toString(), request));
+      return new Response(nf.body, { status: 404, headers: nf.headers });
     } catch (e) {
       return json({ error: e.message || 'Audit failed' }, 400);
     }
