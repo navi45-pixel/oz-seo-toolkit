@@ -54,11 +54,15 @@ while ((m = nodeRe.exec(serverSrc))) nodeSet.add(m[1]);
 if (/express\.static\(path\.join\(__dirname,\s*'public'\)\)/.test(serverSrc)) nodeSet.add('/');
 if (nodeSet.size === 1 && nodeSet.has('/')) fail('server.js only serves / via static — page routes missing?');
 
-/* 4. Sitemap URLs (paths only) */
+/* 4. Sitemap URLs (paths only — domain-agnostic, so a future custom
+ *    domain swap doesn't break this gate) */
 const sitemap = read('public/sitemap.xml');
 const smSet = new Set();
-const smRe = /<loc>[^<]*workers\.dev(\/[^<]*)<\/loc>/g;
-while ((m = smRe.exec(sitemap))) smSet.add(m[1] === '' ? '/' : m[1]);
+const smRe = /<loc>([^<]+)<\/loc>/g;
+while ((m = smRe.exec(sitemap))) {
+  try { smSet.add(new URL(m[1]).pathname === '/' ? '/' : new URL(m[1]).pathname.replace(/\/$/, '') || '/'); }
+  catch { fail(`sitemap.xml has a non-URL <loc>: ${m[1]}`); }
+}
 
 const compare = (name, set) => {
   if (norm(set) === norm(fileSet)) ok(`${name} match the served pages: ${norm(set)}`);

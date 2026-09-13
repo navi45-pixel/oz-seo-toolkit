@@ -97,6 +97,13 @@ Use `PORT=8080 npm start` to run on a different port; check `server.log` if anyt
 ## Deploy to Cloudflare Workers
 The same audit engine runs on Cloudflare (`worker.js` + `wrangler.toml`).
 
+**Custom domain:** the full cutover runbook — DNS records, Cloudflare domain
+attachment, the one-command canonical/sitemap/robots origin swap
+(`node scripts/set-origin.js <url>`, safe by construction: it replaces only
+URLs on the current canonical host), Search Console handover and the SPF/DMARC
+records that close the last self-audit fail — lives in
+[docs/custom-domain.md](docs/custom-domain.md).
+
 **Push deploys are handled by Cloudflare Workers Builds** (Cloudflare's Git
 integration — it clones the repo itself and runs `npx wrangler deploy`; no
 GitHub secrets needed). Connect the repo once at dash.cloudflare.com →
