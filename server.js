@@ -33,6 +33,14 @@ const SECURITY_HEADERS = {
   ].join('; '),
 };
 app.use((_req, res, next) => { for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v); next(); });
+// Cache policy: HTML always revalidates (content changes with deploys);
+// static files (og-image, robots, sitemap, favicon) cache for a day.
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api/') && !/\.html$/i.test(req.path) && req.path !== '/') {
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+  }
+  next();
+});
 app.use(express.json({ limit: '100kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 

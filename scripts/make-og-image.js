@@ -142,3 +142,48 @@ const png = Buffer.concat([
 const out = path.join(__dirname, '..', 'public', 'og-image.png');
 fs.writeFileSync(out, png);
 console.log(`make-og-image: wrote ${out} (${png.length} bytes, ${W}x${H})`);
+
+/* ---------- favicon.ico (32x32 BMP-format ICO: green Oz badge) ---------- */
+const S = 32;
+const fbuf = Buffer.alloc(S * S * 3);
+const fset = (x, y, c) => { if (x >= 0 && y >= 0 && x < S && y < S) { const o = (y * S + x) * 3; fbuf[o] = c[0]; fbuf[o + 1] = c[1]; fbuf[o + 2] = c[2]; } };
+// Rounded green square with 2px margin.
+const r = 7;
+for (let y = 2; y < 30; y++) for (let x = 2; x < 30; x++) {
+  const dx = Math.max(2 + r - x, x - (29 - r), 0);
+  const dy = Math.max(2 + r - y, y - (29 - r), 0);
+  if (dx * dx + dy * dy <= r * r) fset(x, y, GREEN);
+}
+// Dark "O" ring + "Z" stem, hand-drawn at this size (bitmap font won't fit).
+const D = BG;
+for (let y = 9; y <= 22; y++) for (let x = 6; x <= 13; x++) {
+  const ring = (x === 6 || x === 13 || y === 9 || y === 22) && !(x < 8 && y > 10 && y < 21 && (x === 6) && false);
+  const inner = x >= 8 && x <= 11 && y >= 11 && y <= 20;
+  if (ring && !inner) fset(x, y, D);
+}
+for (let y = 9; y <= 22; y++) for (let x = 17; x <= 25; x++) {
+  const isZ = y === 9 || y === 22 || (x === 25 - Math.floor((y - 9) * (8 / 13)));
+  if (isZ) fset(x, y, D);
+}
+// BMP (BGRA, bottom-up, 32bpp) + AND mask.
+const pixelData = Buffer.alloc(S * S * 4);
+for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+  const so = (y * S + x) * 3, doi = ((S - 1 - y) * S + x) * 4;
+  pixelData[doi] = fbuf[so + 2]; pixelData[doi + 1] = fbuf[so + 1]; pixelData[doi + 2] = fbuf[so]; pixelData[doi + 3] = 255;
+}
+const maskRow = Math.ceil(S / 8);
+const andMask = Buffer.alloc(maskRow * S);
+const bmp = Buffer.alloc(40);
+bmp.writeUInt32LE(40, 0); bmp.writeInt32LE(S, 4); bmp.writeInt32LE(S * 2, 8);
+bmp.writeUInt16LE(1, 12); bmp.writeUInt16LE(32, 14);
+const dataSize = Buffer.alloc(4);
+dataSize.writeUInt32LE(40 + pixelData.length + andMask.length, 0);
+const ico = Buffer.concat([
+  Buffer.from([0, 0, 1, 0, 1, 0]),          // ICONDIR: 1 image
+  Buffer.from([S, S, 0, 0, 1, 0, 32, 0]),   // ICONDIRENTRY: 32x32, 32bpp
+  dataSize,
+  bmp, pixelData, andMask,
+]);
+const icoOut = path.join(__dirname, '..', 'public', 'favicon.ico');
+fs.writeFileSync(icoOut, ico);
+console.log(`make-og-image: wrote ${icoOut} (${ico.length} bytes, ${S}x${S})`);

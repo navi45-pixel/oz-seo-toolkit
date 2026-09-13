@@ -3,8 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OzSEO Toolkit — Free Website Audit, AI SEO &amp; Speed Checker for Australian Businesses</title>
-<meta name="description" content="Free all-in-one website audit for Australian businesses. Check SEO, AI/GEO visibility, website health, speed, security and local SEO in every state — NSW, VIC, QLD, WA, SA, TAS, ACT &amp; NT.">
+<link rel="shortcut icon" href="/favicon.ico">
+<title>Free Website Audit &amp; SEO Checker | OzSEO Toolkit</title>
+<meta name="description" content="Run a free website audit in seconds — 76 SEO, AI/GEO, speed, security and local SEO checks for Australian businesses in every state.">
+<meta name="author" content="Navdeep">
 <style>:root {
   --bg: #0a1210;
   --bg2: #0e1a16;
@@ -147,7 +149,7 @@ header.site {
   position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
 }
 .score-num b { font-size: 40px; font-weight: 850; }
-.score-num small { display: block; color: var(--muted); font-size: 11px; margin-top: -4px; }
+.score-num small { display: block; color: var(--muted); font-size: 12px; margin-top: -4px; }
 .overall-meta { flex: 1; min-width: 260px; }
 .overall-meta h2 { font-size: 22px; margin-bottom: 4px; word-break: break-all; }
 .overall-meta .url-line { color: var(--muted); font-size: 13px; margin-bottom: 12px; word-break: break-all; }
@@ -212,7 +214,7 @@ header.site {
   max-width: 640px;
 }
 .serp .serp-url { font-size: 13px; color: #202124; display: flex; align-items: center; gap: 8px; }
-.serp .serp-url .fav { width: 22px; height: 22px; border-radius: 50%; background: #f1f3f4; display: grid; place-items: center; font-size: 11px; color: #5f6368; }
+.serp .serp-url .fav { width: 22px; height: 22px; border-radius: 50%; background: #f1f3f4; display: grid; place-items: center; font-size: 12px; color: #5f6368; }
 .serp .serp-url span.u { color: #4d5156; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 480px; }
 .serp .serp-title { color: #1a0dab; font-size: 20px; margin: 6px 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .serp .serp-desc { color: #4d5156; font-size: 14px; }
@@ -255,7 +257,7 @@ header.site {
 .states-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
 .state-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
 .state-card h3 { font-size: 15px; display: flex; align-items: center; gap: 8px; }
-.state-code { background: linear-gradient(135deg, var(--green), #149a5b); color: #05240f; font-weight: 900; font-size: 11px; padding: 2px 8px; border-radius: 6px; }
+.state-code { background: linear-gradient(135deg, var(--green), #149a5b); color: #05240f; font-weight: 900; font-size: 12px; padding: 2px 8px; border-radius: 6px; }
 .state-card p { color: var(--muted); font-size: 13px; margin-top: 6px; }
 .state-card .cities { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
 .state-card .cities span { font-size: 11.5px; background: var(--panel2); border: 1px solid var(--border); border-radius: 99px; padding: 2px 9px; color: var(--muted); }
@@ -268,6 +270,13 @@ header.site {
 /* section titles */
 .section-title { margin: 46px 0 6px; font-size: 24px; font-weight: 800; letter-spacing: -0.3px; }
 .section-sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; max-width: 760px; }
+
+/* FAQ */
+#faq .faq-list { max-width: 760px; margin: 0 auto; }
+#faq h3 { font-size: 17px; font-weight: 800; margin: 22px 0 6px; }
+#faq p { color: var(--text); font-size: 15px; margin: 0 0 8px; }
+#faq ul { color: var(--text); font-size: 15px; margin: 0 0 8px 22px; }
+#faq li { margin: 4px 0; }
 
 /* footer */
 footer.site { border-top: 1px solid var(--border); margin-top: 60px; padding: 34px 0; color: var(--muted); font-size: 13px; }
@@ -296,7 +305,7 @@ label.field input:focus, label.field select:focus, label.field textarea:focus { 
 }
 .listing h3 { font-size: 15.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .listing .meta { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
-.badge { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--border); color: var(--muted); }
+.badge { font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--border); color: var(--muted); }
 .badge.state { background: rgba(47,213,123,0.13); color: var(--green); border-color: rgba(47,213,123,0.3); }
 .badge.cat { background: rgba(245,197,66,0.1); color: var(--gold); border-color: rgba(245,197,66,0.3); }
 .listing p { color: var(--muted); font-size: 13.5px; }
@@ -325,7 +334,7 @@ label.field input:focus, label.field select:focus, label.field textarea:focus { 
 <!-- Open Graph / Twitter cards (share previews) -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="OzSEO Toolkit">
-<meta property="og:title" content="OzSEO Toolkit — Free Website Audit, AI SEO &amp; Speed Checker for Australian Businesses">
+<meta property="og:title" content="Free Website Audit &amp; SEO Checker | OzSEO Toolkit">
 <meta property="og:description" content="Free all-in-one website audit for Australian businesses. Check SEO, AI/GEO visibility, website health, speed, security and local SEO in every state.">
 <meta property="og:url" content="https://oz-seo-toolkit.multani-navdeep29.workers.dev/">
 <meta property="og:image" content="https://oz-seo-toolkit.multani-navdeep29.workers.dev/og-image.png">
@@ -334,7 +343,7 @@ label.field input:focus, label.field select:focus, label.field textarea:focus { 
 <meta property="og:image:alt" content="OzSEO Toolkit — free website audits, backlinks and AI SEO for Australian businesses">
 <meta property="og:locale" content="en_AU">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="OzSEO Toolkit — Free Website Audit, AI SEO &amp; Speed Checker for Australian Businesses">
+<meta name="twitter:title" content="Free Website Audit &amp; SEO Checker | OzSEO Toolkit">
 <meta name="twitter:description" content="Free all-in-one website audit for Australian businesses. Check SEO, AI/GEO visibility, website health, speed, security and local SEO in every state.">
 <meta name="twitter:image" content="https://oz-seo-toolkit.multani-navdeep29.workers.dev/og-image.png">
 
@@ -342,20 +351,59 @@ label.field input:focus, label.field select:focus, label.field textarea:focus { 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "OzSEO Toolkit",
-  "url": "https://oz-seo-toolkit.multani-navdeep29.workers.dev/",
-  "description": "Free website audit toolkit for Australian businesses: SEO, AI/GEO visibility, speed, security and local SEO checks.",
-  "isAccessibleForFree": true,
-  "audience": {
-    "@type": "Audience",
-    "audienceType": "Australian small businesses"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "OzSEO Toolkit",
-    "url": "https://oz-seo-toolkit.multani-navdeep29.workers.dev/"
-  }
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "OzSEO Toolkit",
+      "url": "https://oz-seo-toolkit.multani-navdeep29.workers.dev/",
+      "description": "Free website audit toolkit for Australian businesses: SEO, AI/GEO visibility, speed, security and local SEO checks.",
+      "isAccessibleForFree": true,
+      "datePublished": "2026-09-12",
+      "dateModified": "2026-09-13",
+      "audience": { "@type": "Audience", "audienceType": "Australian small businesses" },
+      "publisher": { "@id": "https://oz-seo-toolkit.multani-navdeep29.workers.dev/#org" }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://oz-seo-toolkit.multani-navdeep29.workers.dev/#org",
+      "name": "OzSEO Toolkit",
+      "url": "https://oz-seo-toolkit.multani-navdeep29.workers.dev/",
+      "logo": "https://oz-seo-toolkit.multani-navdeep29.workers.dev/og-image.png",
+      "description": "Free website audit, AI search visibility checks and a free Australian backlink directory.",
+      "areaServed": { "@type": "Country", "name": "Australia" },
+      "founder": { "@type": "Person", "name": "Navdeep" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is this website audit really free?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes — OzSEO Toolkit is 100% free with no sign-up and no card. Every audit runs all 76 checks on our servers at no cost." }
+        },
+        {
+          "@type": "Question",
+          "name": "What does the free audit check?",
+          "acceptedAnswer": { "@type": "Answer", "text": "76 checks across 8 groups: on-page SEO, AI/GEO search visibility, technical health, speed and Core Web Vitals, security, mobile, content quality and Australian local SEO." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is GEO / AI search visibility?",
+          "acceptedAnswer": { "@type": "Answer", "text": "GEO visibility is how easily AI assistants like ChatGPT, Copilot and Perplexity can find, understand and cite your business. The audit checks structured data, quotable answers and AI crawler access." }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does an audit take?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Usually under 30 seconds. The audit fetches your page, runs DNS and security probes, and queries Google PageSpeed — all in one pass." }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need an account or API key?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. The audit form is free for anyone, and even the JSON API needs no key — see the API reference for every endpoint." }
+        }
+      ]
+    }
+  ]
 }
 </script>
 </head>
@@ -377,7 +425,7 @@ label.field input:focus, label.field select:focus, label.field textarea:focus { 
 <main class="container">
   <section class="hero">
     <h1>Free complete website audit for<br><span class="grad">Australian businesses</span></h1>
-    <p class="sub">Paste your website link and get an instant audit across SEO, AI search (GEO) visibility, website health, speed, security, mobile and local SEO — built for businesses from Sydney to Perth, Brisbane to Hobart.</p>
+    <p class="sub">Paste your website link and get an instant audit across SEO, AI search (GEO) visibility, website health, speed, security, mobile and local SEO — built for businesses from Sydney to Perth, Brisbane to Hobart. <strong>Get started free — no sign-up, no card.</strong></p>
 
     <form class="audit-form" id="auditForm">
       <input type="text" id="urlInput" placeholder="Enter your website, e.g. yourbusiness.com.au" autocomplete="url" spellcheck="false" aria-label="Website URL">
@@ -473,6 +521,32 @@ label.field input:focus, label.field select:focus, label.field textarea:focus { 
     <div class="listings-grid" id="rlGrid"></div>
   </section>
 
+  <!-- ===================== FAQ ===================== -->
+  <section id="faq">
+    <h2 class="section-title">Frequently asked questions</h2>
+    <p class="section-sub">Straight answers about the free audit — the same ones our JSON API returns to AI assistants.</p>
+    <div class="faq-list">
+      <h3>Is this website audit really free?</h3>
+      <p>Yes — OzSEO Toolkit is 100% free with no sign-up and no card. Every audit runs all <strong>76 checks</strong> on our servers at no cost.</p>
+      <h3>What does the free audit check?</h3>
+      <p><strong>76 checks across 8 groups</strong>, covering:</p>
+      <ul>
+        <li>On-page SEO (titles, meta, headings, Open Graph, internal links)</li>
+        <li>AI / GEO search visibility for ChatGPT, Copilot and Perplexity</li>
+        <li>Technical health (DNS, HTTPS, robots.txt, sitemap, 404 handling)</li>
+        <li>Speed and Core Web Vitals via Google PageSpeed</li>
+        <li>Security (SSL, headers, SPF/DMARC, mixed content)</li>
+        <li>Mobile readiness, content quality and Australian local SEO</li>
+      </ul>
+      <h3>What is GEO / AI search visibility?</h3>
+      <p>GEO visibility is how easily AI assistants like ChatGPT, Copilot and Perplexity can find, understand and cite your business. The audit checks structured data, quotable answers and AI crawler access.</p>
+      <h3>How long does an audit take?</h3>
+      <p>Usually under <strong>30 seconds</strong>. The audit fetches your page, runs DNS and security probes, and queries Google PageSpeed — all in one pass.</p>
+      <h3>Do I need an account or API key?</h3>
+      <p>No. The audit form is free for anyone, and even the <a href="/api">JSON API</a> needs no key.</p>
+    </div>
+  </section>
+
   <!-- ===================== STATES ===================== -->
   <h2 class="section-title">Built for every Australian state &amp; territory</h2>
   <p class="section-sub">Local SEO works differently in each market. Our audit checks for suburb, city and state mentions, Australian phone formats, ABN display, geo markup and more — the signals that win the local pack in your area.</p>
@@ -519,7 +593,7 @@ label.field input:focus, label.field select:focus, label.field textarea:focus { 
         </p>
       </div>
     </div>
-    <p style="margin-top:22px;font-size:12px;">&copy; 2026 OzSEO Toolkit &middot; Built with free open-source software &middot; Results are estimates — always verify in Google Search Console.</p>
+    <p style="margin-top:22px;font-size:13px;">&copy; 2026 OzSEO Toolkit &middot; Built by Navdeep with free open-source software &middot; Results are estimates — always verify in Google Search Console.</p>
   </div>
 </footer>
 
