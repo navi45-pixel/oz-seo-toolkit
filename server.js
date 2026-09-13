@@ -5,6 +5,7 @@ const fs = require('fs');
 const { runAudit } = require('./lib/audit');
 const { runSpeedTest } = require('./lib/speed');
 const { probePerformance } = require('./lib/perfprobe');
+const { checkSubmission, memoryStore, clientKey } = require('./lib/ratelimit');
 
 const app = express();
 // A HOST-SET PORT=0 (rare, but seen in some sandboxes) would make the OS pick a
@@ -110,6 +111,9 @@ app.get('/api/speed', ah(async (req, res) => {
 // ---------- API: backlink directory ----------
 // Submitter emails are stored for the operator but NEVER exposed via the API.
 const publicListing = ({ email, ...pub }) => pub;
+// One shared rate-limit store for the process lifetime (fresh counters would
+// never trip). Resets on restart — acceptable for spam deterrence.
+const backlinkRateStore = memoryStore();
 const BACKLINKS_PAGE_DEFAULT = 50;
 const BACKLINKS_PAGE_MAX = 100;
 app.get('/api/backlinks', ah(async (req, res) => {
@@ -128,6 +132,16 @@ app.get('/api/backlinks', ah(async (req, res) => {
 }));
 
 app.post('/api/backlinks', ah(async (req, res) => {
+  // Anti-spam: per-IP submission quota (shared logic with the Workers deploy).
+  const rlKey = clientKey(req.headers, req.socket && req.socket.remoteAddress);
+  const rl = await checkSubmission({ key: rlKey, store: backlinkRateStore });
+  if (!rl.ok) {
+    const msg = rl.reason === 'gap'
+      ? 'Please wait at least 30 seconds between submissions.'
+      : 'Submission limit reached for this hour (3 per hour per IP) — please try again later.';
+    return res.status(429).json({ error: msg });
+  }
+
   const b = req.body || {};
   const name = clean(b.name, 80);
   const website = validUrl(clean(b.website, 300));
@@ -157,6 +171,8 @@ app.post('/api/backlinks', ah(async (req, res) => {
   };
   list.push(entry);
   saveBacklinks(list);
+  // Count the attempt against the quota only after the submission succeeded.
+  await checkSubmission({ key: rlKey, store: backlinkRateStore, record: true });
   res.json({ ok: true, entry: publicListing(entry) });
 }));
 

@@ -405,7 +405,10 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
     <pre class="shape">200  { "ok": true, "entry": { ...same shape as GET listings... } }
 400  { "error": "Please enter a valid website URL." }   <span class="c">// any validation failure</span>
 409  { "error": "That website is already listed." }
-400  { "error": "Directory is full at the moment — please try again later." }</pre>
+400  { "error": "Directory is full at the moment — please try again later." }
+429  { "error": "Submission limit reached for this hour (3 per hour per IP) — please try again later." }
+     <span class="c">// or: "Please wait at least 30 seconds between submissions."</span></pre>
+    <div class="note">Anti-spam quota per client IP: max <b>3 successful submissions per rolling hour</b>, and at least <b>30s between submissions</b>. Failed validation attempts don't count. Workers responses include a <code>Retry-After</code> header on 429.</div>
     <h3 class="sub">Example</h3>
     <pre class="shape">curl -X POST http://localhost:3000/api/backlinks \
   -H "Content-Type: application/json" \

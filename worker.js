@@ -18,11 +18,16 @@
 import { runAudit } from './lib/audit.js';
 import { runSpeedTest } from './lib/speed.js';
 import { probePerformance } from './lib/perfprobe.js';
+import { checkSubmission, clientKey } from './lib/ratelimit.js';
 
-const json = (obj, status = 200) =>
+const json = (obj, status = 200, extraHeaders = {}) =>
   new Response(JSON.stringify(obj), {
     status,
-    headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' },
+    headers: {
+      'content-type': 'application/json',
+      'access-control-allow-origin': '*',
+      ...extraHeaders,
+    },
   });
 
 // ---------- API: backlink directory (KV-backed) ----------
@@ -34,6 +39,35 @@ const BACKLINKS_KEY = 'backlinks';
 const BACKLINKS_LIMIT = 500;
 const BACKLINKS_PAGE_DEFAULT = 50;
 const BACKLINKS_PAGE_MAX = 100;
+
+// Per-IP submission quota, persisted in the same KV namespace (counters
+// auto-expire after the hour window via KV TTLs, so no manual cleanup).
+const RL_MAX_PER_HOUR = 3;
+const RL_MIN_GAP_MS = 30_000;
+function kvRateStore(kv) {
+  return {
+    async get(key) {
+      const k = `rl:${key}`;
+      const [lastAtStr, countStr] = await Promise.all([kv.get(k), kv.get(`${k}:n`)]);
+      const lastAt = lastAtStr ? Number(lastAtStr) : 0;
+      const count = countStr ? Number(countStr) : 0;
+      if (lastAt && Date.now() - lastAt >= 3_600_000) return { lastAt: 0, count: 0 };
+      return { lastAt, count };
+    },
+    async increment(key) {
+      const k = `rl:${key}`;
+      const prev = await this.get(key);
+      const fresh = prev.lastAt === 0;
+      const next = { lastAt: Date.now(), count: fresh ? 1 : prev.count + 1 };
+      // TTL 2h (>= window) so abandoned counters disappear on their own.
+      await Promise.all([
+        kv.put(k, String(next.lastAt), { expirationTtl: 7200 }),
+        kv.put(`${k}:n`, String(next.count), { expirationTtl: 7200 }),
+      ]);
+      return next;
+    },
+  };
+}
 
 const clean = (s, max) => String(s || '').replace(/[<>]/g, '').trim().slice(0, max);
 function validUrl(u) {
@@ -85,6 +119,20 @@ async function handleBacklinks(request, env) {
     return json({ error: 'Method not allowed. Use GET to read the directory or POST to add a listing.' }, 405);
   }
 
+  // Anti-spam: per-IP submission quota (shared logic with the Node server).
+  const rlKey = clientKey(request.headers, 'unknown');
+  const rlStore = kvRateStore(kv);
+  const rl = await checkSubmission({ key: rlKey, store: rlStore });
+  if (!rl.ok) {
+    const waitMs = rl.lastAt
+      ? Math.max(1000, (rl.reason === 'gap' ? RL_MIN_GAP_MS : 3_600_000) - (Date.now() - rl.lastAt))
+      : 60_000;
+    const msg = rl.reason === 'gap'
+      ? 'Please wait at least 30 seconds between submissions.'
+      : 'Submission limit reached for this hour (3 per hour per IP) — please try again later.';
+    return json({ error: msg }, 429, { 'retry-after': String(Math.ceil(waitMs / 1000)) });
+  }
+
   let body;
   try { body = await request.json(); } catch { body = {}; }
   const b = body || {};
@@ -122,6 +170,8 @@ async function handleBacklinks(request, env) {
   await kv.put(BACKLINKS_KEY, JSON.stringify(list));
   backlinksCache = list; // same isolate: keep the cache coherent after writes
   backlinksCacheAt = Date.now();
+  // Count the attempt against the quota only after the submission succeeded.
+  await checkSubmission({ key: rlKey, store: rlStore, record: true });
   return json({ ok: true, entry: (({ email, ...pub }) => pub)(entry) });
 }
 
