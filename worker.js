@@ -304,6 +304,13 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     try {
+      // Force HTTPS: workers.dev serves plain HTTP too, and HSTS only
+      // protects clients that already saw an HTTPS response. With
+      // run_worker_first this sees every request, so upgrade them all.
+      if (url.protocol === 'http:') {
+        url.protocol = 'https:';
+        return Response.redirect(url.toString(), 301);
+      }
       if (url.pathname === '/api/health') return withSecurityHeaders(json({ ok: true, runtime: 'cloudflare-workers' }));
       if (url.pathname === '/api/audit') return withSecurityHeaders(json(await runAudit(url.searchParams.get('url'))));
       if (url.pathname === '/api/perf') {
