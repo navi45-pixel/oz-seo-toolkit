@@ -108,11 +108,25 @@ async function handleBacklinks(request, env) {
       Math.max(1, Math.floor(Number(url.searchParams.get('limit'))) || BACKLINKS_PAGE_DEFAULT)
     );
     const offset = Math.max(0, Math.floor(Number(url.searchParams.get('offset'))) || 0);
+    // Cursor pagination: `after=<id>` returns listings strictly older than
+    // that id (ids begin with a Base36 timestamp, so string comparison = age
+    // order). Stable under concurrent insertions and anchor deletion.
+    const after = String(url.searchParams.get('after') || '').slice(0, 64);
     const matched = all.filter((b) => (!state || b.state === state) && (!cat || b.category === cat));
+    const base = after ? matched.filter((b) => String(b.id) < after) : matched;
+    const start = after ? 0 : offset; // cursor takes precedence over offset
     // Newest first: reverse, window the page, then strip submitter emails —
     // they stay in storage and never appear in API responses.
-    const page = matched.reverse().slice(offset, offset + limit).map(({ email, ...pub }) => pub);
-    return json({ total: all.length, offset, limit, hasMore: offset + limit < matched.length, listings: page });
+    const page = base.slice().reverse().slice(start, start + limit).map(({ email, ...pub }) => pub);
+    const hasMore = start + limit < base.length;
+    return json({
+      total: all.length,
+      offset: start,
+      limit,
+      hasMore,
+      nextCursor: hasMore && page.length ? page[page.length - 1].id : null,
+      listings: page,
+    });
   }
 
   if (request.method !== 'POST') {

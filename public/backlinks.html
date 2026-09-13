@@ -481,7 +481,7 @@ async function safeJson(res) {
 
 /* Directory loading — paginated (server default: 50 per page, max 100) */
 const PAGE_SIZE = 50;
-let blOffset = 0;
+let blCursor = null; // id-anchored cursor: stable while new listings arrive
 let blHasMore = false;
 let blLastFilters = { state: '', cat: '' };
 
@@ -510,21 +510,21 @@ async function loadListings(opts) {
   // Filters changed since this page was requested? Start over instead of mixing.
   if (append && (state !== blLastFilters.state || cat !== blLastFilters.cat)) return loadListings();
   if (!append) {
-    blOffset = 0;
+    blCursor = null;
     blLastFilters = { state, cat };
   }
   const params = new URLSearchParams();
   if (state) params.set('state', state);
   if (cat) params.set('category', cat);
   params.set('limit', String(PAGE_SIZE));
-  params.set('offset', String(blOffset));
+  if (blCursor) params.set('after', blCursor);
   try {
     const res = await fetch('/api/backlinks?' + params);
     const data = await safeJson(res);
     const box = $id('listings');
     $id('blCount').textContent = data.total ? `${data.total} site${data.total === 1 ? '' : 's'} listed` : '';
     blHasMore = !!data.hasMore;
-    blOffset += data.listings.length;
+    blCursor = data.nextCursor || null;
     const html = data.listings.map(listingCard).join('');
     if (append) box.insertAdjacentHTML('beforeend', html);
     else box.innerHTML = html || `<div class="empty-note" style="grid-column:1/-1">No listings yet${state || cat ? ' for that filter' : ''} — be the first to add your site above! &#128640;</div>`;

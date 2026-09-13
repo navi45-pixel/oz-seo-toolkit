@@ -27,8 +27,9 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
 **Page 2 — Free Backlinks & Blogger Directory (`/backlinks`)**
 - Free self-serve listing form (validated, persisted to `data/backlinks.json`; submitter emails are stored for the operator but never exposed via the API or the page)
 - Anti-spam on `POST /api/backlinks`: per-IP limit of 3 successful submissions per rolling hour with a 30s minimum gap — identical logic on Node and Workers (in-memory counters on Node, auto-expiring KV counters on the edge)
-- Filter listings by state & category; API supports pagination
-  (`GET /api/backlinks?limit=50&offset=0` — default 50/page, capped at 100)
+- Filter listings by state & category; API supports stable cursor pagination
+  (`GET /api/backlinks?after=<id>&limit=50` — pages never shift when new
+  listings arrive mid-scroll; offset paging still works)
 - 14 curated free backlink sources for Australia (Google Business Profile, Bing Places, Apple Business Connect, Yellow Pages, TrueLocal, Hotfrog, Qwoted, Featured, …) — 13 external sites plus this directory itself
 - Backlink safety tips
 

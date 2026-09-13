@@ -353,7 +353,8 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
       <tr><td><code>state</code></td><td><span class="opt">optional</span></td><td><p>Filter: <code>NSW VIC QLD WA SA TAS ACT NT</code> (case-insensitive).</p></td></tr>
       <tr><td><code>category</code></td><td><span class="opt">optional</span></td><td><p>Filter: <code>Blogger</code>, <code>Business</code>, <code>Directory</code>, <code>News / Media</code>, <code>Community</code>, <code>Other</code>.</p></td></tr>
       <tr><td><code>limit</code></td><td><span class="opt">optional</span></td><td><p>Max listings per page. Default <b>50</b>, capped at <b>100</b> (values &gt;100 or ≤0 fall back to the default).</p></td></tr>
-      <tr><td><code>offset</code></td><td><span class="opt">optional</span></td><td><p>Listings to skip from the newest — combine with <code>limit</code> to page: <code>?limit=50&offset=50</code>.</p></td></tr>
+      <tr><td><code>offset</code></td><td><span class="opt">optional</span></td><td><p>Listings to skip from the newest — combine with <code>limit</code> to page: <code>?limit=50&offset=50</code>. Ignored when <code>after</code> is used.</p></td></tr>
+      <tr><td><code>after</code></td><td><span class="opt">optional</span></td><td><p>Cursor: a listing <code>id</code>. Returns listings strictly <b>older</b> than that id, newest first. Unlike <code>offset</code>, pages never shift when new listings arrive mid-scroll — pass <code>nextCursor</code> from the previous response as <code>?after=…</code> for the next page.</p></td></tr>
     </table>
     <h3 class="sub">Response</h3>
     <pre class="shape">{
@@ -361,6 +362,7 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
   "offset": 0,                   <span class="c">// echo of the request's offset</span>
   "limit": 50,                   <span class="c">// effective page size (after cap)</span>
   "hasMore": true,               <span class="c">// more pages available after this one</span>
+  "nextCursor": "mtz0g7a7nljc",  <span class="c">// last id on this page; pass as ?after= for the next page (null on the last page)</span>
   "listings": [
     {
       "id": "kpx8z1ab2c3d",
@@ -380,6 +382,7 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
         <button class="btn" data-run="backlinks">Run live example</button>
         <button class="btn secondary" data-run="backlinks-filtered">filtered: NSW + Blogger</button>
         <button class="btn secondary" data-run="backlinks-page2">page 2: limit=1&offset=1</button>
+        <button class="btn secondary" data-run="backlinks-cursor">page 2 via after-cursor</button>
       </div>
       <div class="status-line" data-status></div>
       <pre class="output" data-output hidden></pre>
@@ -461,6 +464,13 @@ const RUNS = {
   'backlinks':          () => ({ path: '/api/backlinks' }),
   'backlinks-filtered': () => ({ path: '/api/backlinks?state=NSW&category=Blogger' }),
   'backlinks-page2':    () => ({ path: '/api/backlinks?limit=1&offset=1' }),
+  'backlinks-cursor':   async () => {
+    // Two-step demo: take the cursor from page 1, then request page 2 with after=.
+    const r = await fetch('/api/backlinks?limit=1');
+    const j = await r.json();
+    const c = j.nextCursor || (j.listings[0] && j.listings[0].id) || '';
+    return { path: '/api/backlinks?limit=1&after=' + encodeURIComponent(c), note: 'page 2 anchored at the cursor returned by page 1' };
+  },
 };
 
 document.querySelectorAll('[data-run]').forEach((btn) => {
@@ -469,7 +479,7 @@ document.querySelectorAll('[data-run]').forEach((btn) => {
     const out = $('[data-output]', box);
     const status = $('[data-status]', box);
     const urlInput = $('[data-url]', box);
-    const spec = RUNS[btn.dataset.run](urlInput ? urlInput.value.trim() : '');
+    const spec = await RUNS[btn.dataset.run](urlInput ? urlInput.value.trim() : '');
 
     btn.disabled = true;
     const original = btn.textContent;

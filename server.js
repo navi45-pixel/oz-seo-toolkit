@@ -125,10 +125,25 @@ app.get('/api/backlinks', ah(async (req, res) => {
     Math.max(1, Math.floor(Number(req.query.limit)) || BACKLINKS_PAGE_DEFAULT)
   );
   const offset = Math.max(0, Math.floor(Number(req.query.offset)) || 0);
+  // Cursor pagination: `after=<id>` returns listings strictly older than that
+  // id (ids begin with a Base36 timestamp, so string comparison = age order).
+  // A cursor stays valid even if the anchor listing is deleted mid-scroll, and
+  // new arrivals can never shift an already-seen window (unlike offset).
+  const after = String(req.query.after || '').slice(0, 64);
   const matched = all.filter((b) => (!state || b.state === state) && (!cat || b.category === cat));
-  // Newest first: reverse, then window the page, then strip emails.
-  const page = matched.reverse().slice(offset, offset + limit).map(publicListing);
-  res.json({ total: all.length, offset, limit, hasMore: offset + limit < matched.length, listings: page });
+  const base = after ? matched.filter((b) => String(b.id) < after) : matched;
+  const start = after ? 0 : offset; // cursor takes precedence over offset
+  // Newest first: reverse, window the page, then strip emails.
+  const page = base.slice().reverse().slice(start, start + limit).map(publicListing);
+  const hasMore = start + limit < base.length;
+  res.json({
+    total: all.length,
+    offset: start,
+    limit,
+    hasMore,
+    nextCursor: hasMore && page.length ? page[page.length - 1].id : null,
+    listings: page,
+  });
 }));
 
 app.post('/api/backlinks', ah(async (req, res) => {

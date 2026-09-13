@@ -73,8 +73,8 @@ async function main() {
         ? `total ${json.total}, limit ${json.limit}, hasMore ${json.hasMore}${emailLeak ? ' — EMAIL LEAK: listing contains an email field' : ', no email fields'} `
         : `status ${status}, unexpected shape`);
 
-    // Pagination contract: limit=1 pages must slice the full listing in order
-    // (tolerant of empty directories and single-listing installs).
+    // Pagination contract: limit=1 pages must window the full listing in
+    // order, and cursor pages must be stable (tolerant of 0/1-listing dirs).
     if (shapeOk) {
       const page = await getJson('/api/backlinks?limit=1&offset=0', 20_000);
       const next = await getJson('/api/backlinks?limit=1&offset=1', 20_000);
@@ -87,6 +87,18 @@ async function main() {
         || firstId(next) === json.listings[1].id;
       report('GET /api/backlinks pagination', pageOk && nextOk && windowOk && distinctOk,
         `page1=${firstId(page) || '∅'} page2=${firstId(next) || '∅'}`);
+
+      // Cursor contract: ?after=<first id> must exclude that id, and
+      // nextCursor must be the true last id of the page.
+      if (json.listings.length) {
+        const cur = await getJson(`/api/backlinks?limit=1&after=${encodeURIComponent(json.listings[0].id)}`, 20_000);
+        const curOk = cur.status === 200 && cur.json.listings.every((l) => String(l.id) < String(json.listings[0].id));
+        const ncOk = cur.json.nextCursor === null
+          || cur.json.listings.length === 0
+          || cur.json.nextCursor === cur.json.listings[cur.json.listings.length - 1].id;
+        report('GET /api/backlinks cursor', curOk && ncOk,
+          `after=${json.listings[0].id} -> ${cur.json.listings.length} older listing(s), nextCursor=${cur.json.nextCursor}`);
+      }
     }
   } catch (e) {
     report('GET /api/backlinks', false, e.message);
