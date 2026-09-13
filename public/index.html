@@ -424,6 +424,17 @@ label.field input:focus, label.field select:focus, label.field textarea:focus { 
     <a class="tool-card" href="https://www.google.com/business/" target="_blank" rel="noopener"><h3>&#128205; Google Business Profile <span class="tag ext">Google</span></h3><p>The single highest-ROI free local SEO tool for Australian businesses.</p></a>
   </div>
 
+  <!-- ===================== RECENT LISTINGS (live) ===================== -->
+  <section id="recentListings" hidden>
+    <h2 class="section-title">Recently listed in the backlink directory</h2>
+    <p class="section-sub" style="display:flex;gap:12px;align-items:baseline;flex-wrap:wrap">
+      <span>Fresh Australian sites open to backlinks, guest posts and collaborations.</span>
+      <a href="/backlinks" style="font-size:13px;font-weight:700">Browse the full directory &rarr;</a>
+      <span class="badge" id="rlTotal"></span>
+    </p>
+    <div class="listings-grid" id="rlGrid"></div>
+  </section>
+
   <!-- ===================== STATES ===================== -->
   <h2 class="section-title">Built for every Australian state &amp; territory</h2>
   <p class="section-sub">Local SEO works differently in each market. Our audit checks for suburb, city and state mentions, Australian phone formats, ABN display, geo markup and more — the signals that win the local pack in your area.</p>
@@ -487,6 +498,40 @@ const progressStep = $id('progressStep');
 const progressTitle = $id('progressTitle');
 const errorBox = $id('errorBox');
 const results = $id('results');
+
+/* Recent directory listings strip — hides itself entirely if the backend is
+   asleep or the directory is empty, so the page never looks broken. */
+(async () => {
+  const esc = (s) => { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; };
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 6000);
+    const res = await fetch('/api/backlinks?limit=3', { signal: ctrl.signal });
+    clearTimeout(t);
+    const ct = res.headers.get('content-type') || '';
+    if (!res.ok || !ct.includes('application/json')) return;
+    const data = await res.json();
+    if (!data || !Array.isArray(data.listings) || !data.listings.length) return;
+    const grid = $id('rlGrid');
+    if (!grid) return;
+    grid.innerHTML = data.listings.map((l) => `
+      <div class="listing">
+        <h3>${esc(l.name)}
+          <span class="badge state">${esc(l.state)}</span>
+          <span class="badge cat">${esc(l.category)}</span>
+        </h3>
+        <div class="meta"><span class="badge">Added ${esc(l.addedAt)}</span></div>
+        <p>${esc(l.description)}</p>
+        <p style="margin-top:10px">
+          <a href="${esc(l.website)}" target="_blank" rel="noopener nofollow ugc">Visit website &rarr;</a>
+        </p>
+      </div>`).join('');
+    const total = $id('rlTotal');
+    if (total && data.total) total.textContent = `${data.total} site${data.total === 1 ? '' : 's'} listed`;
+    const strip = $id('recentListings');
+    if (strip) strip.hidden = false;
+  } catch { /* backend asleep or offline — keep the strip hidden */ }
+})();
 
 const STEPS = [
   'Fetching your homepage…',

@@ -18,7 +18,7 @@ Paste any URL and get 90+ checks across 8 scored categories:
 | Content | Word count, keyword stuffing, title↔H1 alignment, Flesch readability, reading time, helpful-content (Who/How/Why) proxies |
 | Local SEO (AU) | .au domain, state/city mentions, AU phone formats, PostalAddress schema, geo meta, Maps embed & review widgets, ABN, click-to-call, opening hours, social profiles |
 
-Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for every warning.
+Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for every warning, and a live "recently listed" strip from the backlink directory (3 newest; hidden entirely when the backend is asleep or the directory is empty).
 
 **Page 3 — Skills Hub (`/skills`) & API Reference (`/api`)**
 - 25 integrated skill modules (13 auto-run in every audit, 9 guided playbooks)
