@@ -104,6 +104,18 @@ async function main() {
     report('GET /api/backlinks', false, e.message);
   }
 
+  // 3b. Moderation endpoints must never be publicly readable (401/403/503 all
+  // acceptable — the point is they must not be 200 and must never leak emails).
+  try {
+    const r = await fetch(BASE + '/api/admin/listings', { signal: AbortSignal.timeout(20_000) });
+    const text = r.status === 200 ? await r.text() : '';
+    const adminOpen = r.status === 200 && text.includes('email');
+    report('GET /api/admin/listings locked', !adminOpen,
+      `status ${r.status}${adminOpen ? ' — MODERATION ENDPOINT PUBLICLY LEAKING EMAILS' : ' (closed without credentials)'}`);
+  } catch (e) {
+    report('GET /api/admin/listings locked', false, e.message);
+  }
+
   // 4. Pages
   for (const p of ['/', '/backlinks', '/skills', '/api']) {
     try {

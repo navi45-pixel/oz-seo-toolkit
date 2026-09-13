@@ -70,6 +70,8 @@ header.site {
   background: rgba(47, 213, 123, 0.14); color: var(--green);
 }
 .method.post { background: rgba(94, 200, 248, 0.13); color: var(--blue); }
+.method.delete { background: rgba(255, 107, 107, 0.13); color: #ff8a8a; }
+.op-tag { font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: rgba(245, 197, 66, 0.12); color: var(--gold); }
 .path { font-size: 15.5px; color: var(--text); }
 .endpoint > p.desc { color: var(--muted); font-size: 14px; margin: 8px 0 4px; }
 h3.sub { font-size: 14px; margin: 18px 0 8px; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -420,6 +422,28 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
        "state":"VIC","category":"Business","description":"Melbourne plumbing services directory listing.",
        "lookingFor":"Guest posts"}'</pre>
     <div class="note gold">No live button here on purpose — it would write a listing to this server's directory. Use the form on the <a href="/backlinks">Free Backlinks page</a> instead.</div>
+  </div>
+
+  <!-- ============ OPERATOR MODERATION ============ -->
+  <div class="endpoint" id="admin">
+    <h2><span class="method">GET</span><span class="path">/api/admin/listings</span> <span class="op-tag">operator</span></h2>
+    <p class="desc">Full directory including submitter emails — for moderation only. Requires <code>Authorization: Bearer &lt;ADMIN_TOKEN&gt;</code>. Set the token via the <code>ADMIN_TOKEN</code> env var (Node) or <code>npx wrangler secret put ADMIN_TOKEN</code> (Workers). Without a configured token the endpoint answers <b>503</b> — closed by default.</p>
+    <h3 class="sub">Response</h3>
+    <pre class="shape">200 { "total": 2, "listings": [ { ...listing fields..., "email": "operator-only" }, … ] }  <span class="c">// newest first</span>
+401 { "error": "Unauthorized." }                 <span class="c">// missing or wrong bearer token</span>
+503 { "error": "Moderation is disabled …" }       <span class="c">// no ADMIN_TOKEN configured</span></pre>
+  </div>
+
+  <div class="endpoint" id="admin-delete">
+    <h2><span class="method delete">DELETE</span><span class="path">/api/admin/listings/:id</span> <span class="op-tag">operator</span></h2>
+    <p class="desc">Remove a listing by id (spam moderation). The id is visible in the moderation listing above and in the public directory.</p>
+    <h3 class="sub">Responses</h3>
+    <pre class="shape">200 { "ok": true, "removed": { ...listing without email... } }
+401 { "error": "Unauthorized." }
+404 { "error": "No listing with that id." }</pre>
+    <h3 class="sub">Example</h3>
+    <pre class="shape">curl -X DELETE http://localhost:3000/api/admin/listings/kpx8z1ab2c3d \
+  -H "Authorization: Bearer $ADMIN_TOKEN"</pre>
   </div>
 
 </main>

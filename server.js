@@ -6,6 +6,7 @@ const { runAudit } = require('./lib/audit');
 const { runSpeedTest } = require('./lib/speed');
 const { probePerformance } = require('./lib/perfprobe');
 const { checkSubmission, memoryStore, clientKey } = require('./lib/ratelimit');
+const { authorize } = require('./lib/admin');
 
 const app = express();
 // A HOST-SET PORT=0 (rare, but seen in some sandboxes) would make the OS pick a
@@ -112,6 +113,30 @@ app.get('/api/speed', ah(async (req, res) => {
   const strategy = req.query.strategy === 'desktop' ? 'desktop' : 'mobile';
   const result = await runSpeedTest(req.query.url, strategy);
   res.json(result);
+}));
+
+// ---------- API: operator moderation (token-gated) ----------
+// Set ADMIN_TOKEN to enable; the endpoints stay closed (503) without it.
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
+
+// Full listings INCLUDING emails — operator eyes only.
+app.get('/api/admin/listings', ah(async (req, res) => {
+  const auth = authorize(req.headers.authorization, ADMIN_TOKEN);
+  if (!auth.allowed) return res.status(auth.status).json({ error: auth.error });
+  const all = loadBacklinks();
+  res.json({ total: all.length, listings: all.slice().reverse() });
+}));
+
+// Remove a listing by id (spam moderation). Returns the removed entry.
+app.delete('/api/admin/listings/:id', ah(async (req, res) => {
+  const auth = authorize(req.headers.authorization, ADMIN_TOKEN);
+  if (!auth.allowed) return res.status(auth.status).json({ error: auth.error });
+  const list = loadBacklinks();
+  const idx = list.findIndex((x) => x.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'No listing with that id.' });
+  const [removed] = list.splice(idx, 1);
+  saveBacklinks(list);
+  res.json({ ok: true, removed: publicListing(removed) });
 }));
 
 // ---------- API: backlink directory ----------

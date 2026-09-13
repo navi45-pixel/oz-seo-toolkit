@@ -27,6 +27,10 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
 **Page 2 — Free Backlinks & Blogger Directory (`/backlinks`)**
 - Free self-serve listing form (validated, persisted to `data/backlinks.json`; submitter emails are stored for the operator but never exposed via the API or the page)
 - Anti-spam on `POST /api/backlinks`: per-IP limit of 3 successful submissions per rolling hour with a 30s minimum gap — identical logic on Node and Workers (in-memory counters on Node, auto-expiring KV counters on the edge)
+- Operator moderation: `GET /api/admin/listings` (full records incl. emails) and
+  `DELETE /api/admin/listings/:id`, gated by a bearer token — `ADMIN_TOKEN` env
+  var on Node, `npx wrangler secret put ADMIN_TOKEN` on Workers. Timing-safe
+  comparison; endpoints answer 503 (closed) when no token is configured
 - Filter listings by state & category; API supports stable cursor pagination
   (`GET /api/backlinks?after=<id>&limit=50` — pages never shift when new
   listings arrive mid-scroll; offset paging still works)

@@ -19,6 +19,7 @@ import { runAudit } from './lib/audit.js';
 import { runSpeedTest } from './lib/speed.js';
 import { probePerformance } from './lib/perfprobe.js';
 import { checkSubmission, clientKey } from './lib/ratelimit.js';
+import { authorize } from './lib/admin.js';
 
 const json = (obj, status = 200, extraHeaders = {}) =>
   new Response(JSON.stringify(obj), {
@@ -44,6 +45,38 @@ const BACKLINKS_PAGE_MAX = 100;
 // auto-expire after the hour window via KV TTLs, so no manual cleanup).
 const RL_MAX_PER_HOUR = 3;
 const RL_MIN_GAP_MS = 30_000;
+
+// Operator token: `npx wrangler secret put ADMIN_TOKEN`. Without the secret
+// the moderation endpoints answer 503 (closed by default).
+const adminAllowed = (request, env) => authorize(request.headers.get('authorization'), env.ADMIN_TOKEN || '');
+
+async function handleAdmin(request, env, url) {
+  const kv = env.BACKLINKS;
+  if (!kv) return json({ error: 'Moderation requires the BACKLINKS KV namespace.' }, 501);
+  const auth = adminAllowed(request, env);
+  if (!auth.allowed) return json({ error: auth.error }, auth.status);
+
+  const list = await loadBacklinks(kv);
+
+  // GET /api/admin/listings — full records including emails.
+  if (request.method === 'GET') {
+    return json({ total: list.length, listings: list.slice().reverse() });
+  }
+
+  // DELETE /api/admin/listings/:id — remove a spam listing.
+  if (request.method === 'DELETE') {
+    const id = decodeURIComponent(url.pathname.split('/').pop() || '');
+    const idx = list.findIndex((x) => x.id === id);
+    if (idx === -1) return json({ error: 'No listing with that id.' }, 404);
+    const [removed] = list.splice(idx, 1);
+    await kv.put(BACKLINKS_KEY, JSON.stringify(list));
+    backlinksCache = list; // same isolate: keep the cache coherent after writes
+    backlinksCacheAt = Date.now();
+    return json({ ok: true, removed: (({ email, ...pub }) => pub)(removed) });
+  }
+
+  return json({ error: 'Method not allowed.' }, 405);
+}
 function kvRateStore(kv) {
   return {
     async get(key) {
@@ -208,6 +241,7 @@ export default {
         const strategy = url.searchParams.get('strategy') === 'desktop' ? 'desktop' : 'mobile';
         return json(await runSpeedTest(url.searchParams.get('url'), strategy));
       }
+      if (url.pathname.startsWith('/api/admin/listings')) return handleAdmin(request, env, url);
       if (url.pathname.startsWith('/api/backlinks')) return handleBacklinks(request, env);
       // Pages
       let p = url.pathname;
