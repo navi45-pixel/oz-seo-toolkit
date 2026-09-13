@@ -352,10 +352,15 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
       <tr><th>Param</th><th>Required</th><th>Description</th></tr>
       <tr><td><code>state</code></td><td><span class="opt">optional</span></td><td><p>Filter: <code>NSW VIC QLD WA SA TAS ACT NT</code> (case-insensitive).</p></td></tr>
       <tr><td><code>category</code></td><td><span class="opt">optional</span></td><td><p>Filter: <code>Blogger</code>, <code>Business</code>, <code>Directory</code>, <code>News / Media</code>, <code>Community</code>, <code>Other</code>.</p></td></tr>
+      <tr><td><code>limit</code></td><td><span class="opt">optional</span></td><td><p>Max listings per page. Default <b>50</b>, capped at <b>100</b> (values &gt;100 or ≤0 fall back to the default).</p></td></tr>
+      <tr><td><code>offset</code></td><td><span class="opt">optional</span></td><td><p>Listings to skip from the newest — combine with <code>limit</code> to page: <code>?limit=50&offset=50</code>.</p></td></tr>
     </table>
     <h3 class="sub">Response</h3>
     <pre class="shape">{
-  "total": 4,                    <span class="c">// ALL listings, before filtering</span>
+  "total": 120,                  <span class="c">// ALL listings, before filtering</span>
+  "offset": 0,                   <span class="c">// echo of the request's offset</span>
+  "limit": 50,                   <span class="c">// effective page size (after cap)</span>
+  "hasMore": true,               <span class="c">// more pages available after this one</span>
   "listings": [
     {
       "id": "kpx8z1ab2c3d",
@@ -374,6 +379,7 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
       <div class="runner-row">
         <button class="btn" data-run="backlinks">Run live example</button>
         <button class="btn secondary" data-run="backlinks-filtered">filtered: NSW + Blogger</button>
+        <button class="btn secondary" data-run="backlinks-page2">page 2: limit=1&offset=1</button>
       </div>
       <div class="status-line" data-status></div>
       <pre class="output" data-output hidden></pre>
@@ -451,6 +457,7 @@ const RUNS = {
   'speed-desktop':      (url) => ({ path: '/api/speed?url=' + encodeURIComponent(url || 'example.com') + '&strategy=desktop', note: 'Lighthouse via Google \u2014 30\u201360s+' }),
   'backlinks':          () => ({ path: '/api/backlinks' }),
   'backlinks-filtered': () => ({ path: '/api/backlinks?state=NSW&category=Blogger' }),
+  'backlinks-page2':    () => ({ path: '/api/backlinks?limit=1&offset=1' }),
 };
 
 document.querySelectorAll('[data-run]').forEach((btn) => {

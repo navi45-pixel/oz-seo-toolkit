@@ -26,7 +26,8 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
 
 **Page 2 — Free Backlinks & Blogger Directory (`/backlinks`)**
 - Free self-serve listing form (validated, persisted to `data/backlinks.json`; submitter emails are stored for the operator but never exposed via the API or the page)
-- Filter listings by state & category
+- Filter listings by state & category; API supports pagination
+  (`GET /api/backlinks?limit=50&offset=0` — default 50/page, capped at 100)
 - 14 curated free backlink sources for Australia (Google Business Profile, Bing Places, Apple Business Connect, Yellow Pages, TrueLocal, Hotfrog, Qwoted, Featured, …) — 13 external sites plus this directory itself
 - Backlink safety tips
 

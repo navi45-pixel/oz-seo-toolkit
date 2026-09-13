@@ -61,16 +61,33 @@ async function main() {
     report(`GET /api/audit?url=${AUDIT_URL}`, false, e.message);
   }
 
-  // 3. Backlink directory (shape + privacy checks — never mutates data)
+  // 3. Backlink directory (shape + privacy + pagination — never mutates data)
   try {
     const { status, json } = await getJson('/api/backlinks', 20_000);
-    const shapeOk = json && typeof json.total === 'number' && Array.isArray(json.listings);
+    const shapeOk = json && typeof json.total === 'number' && Array.isArray(json.listings)
+      && typeof json.hasMore === 'boolean' && typeof json.limit === 'number';
     // Stored submissions do contain emails; the public API must never leak one.
     const emailLeak = shapeOk && json.listings.some((l) => l.email != null);
     report('GET /api/backlinks', status === 200 && shapeOk && !emailLeak,
       shapeOk
-        ? `total ${json.total}${emailLeak ? ' — EMAIL LEAK: listing contains an email field' : ', no email fields'} `
+        ? `total ${json.total}, limit ${json.limit}, hasMore ${json.hasMore}${emailLeak ? ' — EMAIL LEAK: listing contains an email field' : ', no email fields'} `
         : `status ${status}, unexpected shape`);
+
+    // Pagination contract: limit=1 pages must slice the full listing in order
+    // (tolerant of empty directories and single-listing installs).
+    if (shapeOk) {
+      const page = await getJson('/api/backlinks?limit=1&offset=0', 20_000);
+      const next = await getJson('/api/backlinks?limit=1&offset=1', 20_000);
+      const firstId = (r) => (r.json.listings[0] ? r.json.listings[0].id : null);
+      const pageOk = page.status === 200 && page.json.listings.length <= 1;
+      const nextOk = next.status === 200 && next.json.listings.length <= 1;
+      const windowOk = json.listings.length === 0
+        || (page.json.listings.length === 1 && firstId(page) === json.listings[0].id);
+      const distinctOk = json.listings.length < 2
+        || firstId(next) === json.listings[1].id;
+      report('GET /api/backlinks pagination', pageOk && nextOk && windowOk && distinctOk,
+        `page1=${firstId(page) || '∅'} page2=${firstId(next) || '∅'}`);
+    }
   } catch (e) {
     report('GET /api/backlinks', false, e.message);
   }

@@ -13,22 +13,14 @@ async function safeJson(res) {
   catch { throw new Error(`The server returned an unexpected response (status ${res.status}). Please try again.`); }
 }
 
-async function loadListings() {
-  const state = $id('fState').value;
-  const cat = $id('fCategory').value;
-  const params = new URLSearchParams();
-  if (state) params.set('state', state);
-  if (cat) params.set('category', cat);
-  try {
-    const res = await fetch('/api/backlinks?' + params);
-    const data = await safeJson(res);
-    const box = $id('listings');
-    $id('blCount').textContent = data.total ? `${data.total} site${data.total === 1 ? '' : 's'} listed` : '';
-    if (!data.listings.length) {
-      box.innerHTML = `<div class="empty-note" style="grid-column:1/-1">No listings yet${state || cat ? ' for that filter' : ''} — be the first to add your site above! &#128640;</div>`;
-      return;
-    }
-    box.innerHTML = data.listings.map((l) => `
+/* Directory loading — paginated (server default: 50 per page, max 100) */
+const PAGE_SIZE = 50;
+let blOffset = 0;
+let blHasMore = false;
+let blLastFilters = { state: '', cat: '' };
+
+function listingCard(l) {
+  return `
       <div class="listing">
         <h3>${esc(l.name)}
           <span class="badge state">${esc(l.state)}</span>
@@ -42,14 +34,47 @@ async function loadListings() {
         <p style="margin-top:10px">
           <a href="${esc(l.website)}" target="_blank" rel="noopener nofollow ugc">Visit website &rarr;</a>
         </p>
-      </div>`).join('');
+      </div>`;
+}
+
+async function loadListings(opts) {
+  const append = !!(opts && opts.append);
+  const state = $id('fState').value;
+  const cat = $id('fCategory').value;
+  // Filters changed since this page was requested? Start over instead of mixing.
+  if (append && (state !== blLastFilters.state || cat !== blLastFilters.cat)) return loadListings();
+  if (!append) {
+    blOffset = 0;
+    blLastFilters = { state, cat };
+  }
+  const params = new URLSearchParams();
+  if (state) params.set('state', state);
+  if (cat) params.set('category', cat);
+  params.set('limit', String(PAGE_SIZE));
+  params.set('offset', String(blOffset));
+  try {
+    const res = await fetch('/api/backlinks?' + params);
+    const data = await safeJson(res);
+    const box = $id('listings');
+    $id('blCount').textContent = data.total ? `${data.total} site${data.total === 1 ? '' : 's'} listed` : '';
+    blHasMore = !!data.hasMore;
+    blOffset += data.listings.length;
+    const html = data.listings.map(listingCard).join('');
+    if (append) box.insertAdjacentHTML('beforeend', html);
+    else box.innerHTML = html || `<div class="empty-note" style="grid-column:1/-1">No listings yet${state || cat ? ' for that filter' : ''} — be the first to add your site above! &#128640;</div>`;
+    const more = $id('blMore');
+    if (more) more.style.display = blHasMore ? '' : 'none';
   } catch {
+    const more = $id('blMore');
+    if (more) more.style.display = 'none';
     $id('listings').innerHTML = '<div class="empty-note" style="grid-column:1/-1">Could not load listings. Try refreshing.</div>';
   }
 }
 
-$id('fState').addEventListener('change', loadListings);
-$id('fCategory').addEventListener('change', loadListings);
+$id('fState').addEventListener('change', () => loadListings());
+$id('fCategory').addEventListener('change', () => loadListings());
+const blMoreBtn = $id('blMore');
+if (blMoreBtn) blMoreBtn.addEventListener('click', () => loadListings({ append: true }));
 
 $id('blForm').addEventListener('submit', async (e) => {
   e.preventDefault();

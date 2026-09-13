@@ -32,6 +32,8 @@ const AU_STATES = ['NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'ACT', 'NT'];
 const CATEGORIES = ['Blogger', 'Business', 'Directory', 'News / Media', 'Community', 'Other'];
 const BACKLINKS_KEY = 'backlinks';
 const BACKLINKS_LIMIT = 500;
+const BACKLINKS_PAGE_DEFAULT = 50;
+const BACKLINKS_PAGE_MAX = 100;
 
 const clean = (s, max) => String(s || '').replace(/[<>]/g, '').trim().slice(0, max);
 function validUrl(u) {
@@ -67,11 +69,16 @@ async function handleBacklinks(request, env) {
     const all = await loadBacklinks(kv);
     const state = (url.searchParams.get('state') || '').toUpperCase();
     const cat = url.searchParams.get('category') || '';
-    const filtered = all
-      .filter((b) => (!state || b.state === state) && (!cat || b.category === cat))
-      .map(({ email, ...pub }) => pub) // submitter emails stay in storage, never in API responses
-      .reverse();
-    return json({ total: all.length, listings: filtered });
+    const limit = Math.min(
+      BACKLINKS_PAGE_MAX,
+      Math.max(1, Math.floor(Number(url.searchParams.get('limit'))) || BACKLINKS_PAGE_DEFAULT)
+    );
+    const offset = Math.max(0, Math.floor(Number(url.searchParams.get('offset'))) || 0);
+    const matched = all.filter((b) => (!state || b.state === state) && (!cat || b.category === cat));
+    // Newest first: reverse, window the page, then strip submitter emails —
+    // they stay in storage and never appear in API responses.
+    const page = matched.reverse().slice(offset, offset + limit).map(({ email, ...pub }) => pub);
+    return json({ total: all.length, offset, limit, hasMore: offset + limit < matched.length, listings: page });
   }
 
   if (request.method !== 'POST') {

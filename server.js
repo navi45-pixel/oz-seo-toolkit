@@ -110,15 +110,21 @@ app.get('/api/speed', ah(async (req, res) => {
 // ---------- API: backlink directory ----------
 // Submitter emails are stored for the operator but NEVER exposed via the API.
 const publicListing = ({ email, ...pub }) => pub;
+const BACKLINKS_PAGE_DEFAULT = 50;
+const BACKLINKS_PAGE_MAX = 100;
 app.get('/api/backlinks', ah(async (req, res) => {
   const all = loadBacklinks();
   const state = (req.query.state || '').toUpperCase();
   const cat = req.query.category || '';
-  const filtered = all
-    .filter((b) => (!state || b.state === state) && (!cat || b.category === cat))
-    .map(publicListing)
-    .reverse();
-  res.json({ total: all.length, listings: filtered });
+  const limit = Math.min(
+    BACKLINKS_PAGE_MAX,
+    Math.max(1, Math.floor(Number(req.query.limit)) || BACKLINKS_PAGE_DEFAULT)
+  );
+  const offset = Math.max(0, Math.floor(Number(req.query.offset)) || 0);
+  const matched = all.filter((b) => (!state || b.state === state) && (!cat || b.category === cat));
+  // Newest first: reverse, then window the page, then strip emails.
+  const page = matched.reverse().slice(offset, offset + limit).map(publicListing);
+  res.json({ total: all.length, offset, limit, hasMore: offset + limit < matched.length, listings: page });
 }));
 
 app.post('/api/backlinks', ah(async (req, res) => {
