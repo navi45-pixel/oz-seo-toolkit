@@ -72,6 +72,7 @@ async function handleAdmin(request, env, url) {
     await kv.put(BACKLINKS_KEY, JSON.stringify(list));
     backlinksCache = list; // same isolate: keep the cache coherent after writes
     backlinksCacheAt = Date.now();
+    await purgeStripCache(request); // deleted listing gone from the strip immediately
     return json({ ok: true, removed: (({ email, ...pub }) => pub)(removed) });
   }
 
@@ -130,6 +131,31 @@ async function loadBacklinks(kv) {
   return backlinksCache;
 }
 
+// ---------- Edge cache for the homepage strip ----------
+// The homepage fetches /api/backlinks?limit=3 on every view; that exact
+// request is served from the Workers edge Cache API for 5 minutes to cut KV
+// reads. Any write through this worker purges the entry so a fresh
+// submission appears on the next request. Other queries (filters, cursors,
+// other page sizes) bypass the edge cache entirely.
+const STRIP_LIMIT = 3;
+const STRIP_TTL_SECONDS = 300;
+const stripCacheKey = (request) =>
+  new Request(new URL('/api/backlinks?limit=' + STRIP_LIMIT, request.url).toString(), { method: 'GET' });
+const isStripRequest = (url, limit) =>
+  limit === STRIP_LIMIT && !url.searchParams.get('after') && !url.searchParams.get('offset')
+  && !url.searchParams.get('state') && !url.searchParams.get('category');
+
+// Purge the cached strip after a successful write (POST/DELETE) so new
+// listings appear immediately. Best-effort: a failed purge only costs
+// freshness for the remaining TTL, never correctness.
+async function purgeStripCache(request) {
+  try {
+    if (typeof caches !== 'undefined' && caches.default) {
+      await caches.default.delete(stripCacheKey(request));
+    }
+  } catch { /* ignore — TTL bounds staleness */ }
+}
+
 async function handleBacklinks(request, env) {
   const kv = env.BACKLINKS;
   if (!kv) {
@@ -138,13 +164,26 @@ async function handleBacklinks(request, env) {
 
   if (request.method === 'GET') {
     const url = new URL(request.url);
-    const all = await loadBacklinks(kv);
-    const state = (url.searchParams.get('state') || '').toUpperCase();
-    const cat = url.searchParams.get('category') || '';
     const limit = Math.min(
       BACKLINKS_PAGE_MAX,
       Math.max(1, Math.floor(Number(url.searchParams.get('limit'))) || BACKLINKS_PAGE_DEFAULT)
     );
+
+    // Homepage strip: serve from the edge cache when possible.
+    if (isStripRequest(url, limit) && typeof caches !== 'undefined' && caches.default) {
+      const cacheKey = stripCacheKey(request);
+      const cached = await caches.default.match(cacheKey);
+      if (cached) {
+        return new Response(cached.body, {
+          status: cached.status,
+          headers: { ...Object.fromEntries(cached.headers), 'x-cache': 'HIT' },
+        });
+      }
+    }
+
+    const all = await loadBacklinks(kv);
+    const state = (url.searchParams.get('state') || '').toUpperCase();
+    const cat = url.searchParams.get('category') || '';
     const offset = Math.max(0, Math.floor(Number(url.searchParams.get('offset'))) || 0);
     // Cursor pagination: `after=<id>` returns listings strictly older than
     // that id (ids begin with a Base36 timestamp, so string comparison = age
@@ -157,14 +196,20 @@ async function handleBacklinks(request, env) {
     // they stay in storage and never appear in API responses.
     const page = base.slice().reverse().slice(start, start + limit).map(({ email, ...pub }) => pub);
     const hasMore = start + limit < base.length;
-    return json({
-      total: all.length,
-      offset: start,
-      limit,
-      hasMore,
-      nextCursor: hasMore && page.length ? page[page.length - 1].id : null,
-      listings: page,
-    });
+    const stripHit = isStripRequest(url, limit);
+    const response = json(
+      { total: all.length, offset: start, limit, hasMore, nextCursor: hasMore && page.length ? page[page.length - 1].id : null, listings: page },
+      200,
+      stripHit
+        ? { 'x-cache': 'MISS', 'cache-control': `public, max-age=${STRIP_TTL_SECONDS}` }
+        : {}
+    );
+    if (stripHit && typeof caches !== 'undefined' && caches.default) {
+      // Store for the next 5 minutes (same-colo put is fast; awaiting keeps
+      // ordering simple without an execution context).
+      await caches.default.put(stripCacheKey(request), response.clone());
+    }
+    return response;
   }
 
   if (request.method !== 'POST') {
@@ -222,6 +267,7 @@ async function handleBacklinks(request, env) {
   await kv.put(BACKLINKS_KEY, JSON.stringify(list));
   backlinksCache = list; // same isolate: keep the cache coherent after writes
   backlinksCacheAt = Date.now();
+  await purgeStripCache(request); // fresh submissions visible immediately
   // Count the attempt against the quota only after the submission succeeded.
   await checkSubmission({ key: rlKey, store: rlStore, record: true });
   return json({ ok: true, entry: (({ email, ...pub }) => pub)(entry) });
