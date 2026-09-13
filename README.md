@@ -89,12 +89,18 @@ different URL instead of the freshly deployed one). CI runs the same
 - To (re)seed or sync the directory from the Node data file:
   ```bash
   npm run sync:kv             # push data/backlinks.json → KV, verify read-back
-  npm run sync:kv -- --check  # verify only (exit 1 if remote differs)
+  npm run sync:kv -- --pull   # merge Workers submissions back into the file
+  npm run sync:kv -- --check  # verify only (exit 1 if the two sides differ)
   ```
-  The script reads the namespace id from `wrangler.toml` and always uses
-  `--remote` (wrangler 4 defaults KV commands to *local* storage — the
-  classic silent no-op). Verification is an authoritative read-back via the
-  KV API, not the edge cache; edge readers can still lag ~60s afterwards.
+  `--pull` is a safe merge, not an overwrite: it takes the union of both
+  sides (by listing id, then deduping identical hostnames), writes the
+  result back to `data/backlinks.json`, converges KV to the same union, and
+  verifies both. Run it after periods of Workers traffic so the Node store
+  picks up submissions made on the edge. The script reads the namespace id
+  from `wrangler.toml` and always uses `--remote` (wrangler 4 defaults KV
+  commands to *local* storage — the classic silent no-op). Verification is
+  an authoritative read-back via the KV API, not the edge cache; edge
+  readers can still lag ~60s afterwards.
 - Deterministic checks (HTML parsing, schema, hreflang, robots, links, speed probe)
   produce the **same results** on Workers and Node.
 - Runtime-bound checks (raw DNS lookups, TLS certificate inspection) are not
