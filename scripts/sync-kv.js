@@ -44,6 +44,14 @@ function readNamespaceId() {
 }
 
 function readLocalData() {
+  // A missing file is normal on fresh clones (data/backlinks.json is
+  // gitignored) — --pull then starts from an empty local store and the merge
+  // adopts everything from KV. Any other problem is still fatal.
+  if (!fs.existsSync(DATA_FILE)) {
+    if (PULL) return [];
+    console.error(`ERROR: ${path.relative(ROOT, DATA_FILE)} not found. For a fresh clone, run --pull to adopt the KV directory.`);
+    process.exit(1);
+  }
   try {
     const parsed = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
     if (!Array.isArray(parsed)) throw new Error('not a JSON array');

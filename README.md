@@ -107,11 +107,18 @@ different URL instead of the freshly deployed one). CI runs the same
   sides (by listing id, then deduping identical hostnames), writes the
   result back to `data/backlinks.json`, converges KV to the same union, and
   verifies both. Run it after periods of Workers traffic so the Node store
-  picks up submissions made on the edge. The script reads the namespace id
-  from `wrangler.toml` and always uses `--remote` (wrangler 4 defaults KV
-  commands to *local* storage — the classic silent no-op). Verification is
-  an authoritative read-back via the KV API, not the edge cache; edge
-  readers can still lag ~60s afterwards.
+  picks up submissions made on the edge.  The script reads the namespace id from `wrangler.toml` and always uses
+  `--remote` (wrangler 4 defaults KV commands to *local* storage — the
+  classic silent no-op). Verification is an authoritative read-back via the
+  KV API, not the edge cache; edge readers can still lag ~60s afterwards.
+- **Automatic convergence**: `.github/workflows/sync-kv.yml` runs the
+  pull-merge + verified push **daily at 21:17 UTC** (and on demand via
+  *Run workflow*). It needs the `CLOUDFLARE_API_TOKEN` repo secret (KV edit
+  permission); without it the job skips instead of failing red. The merged
+  store — which contains submitter emails — is **never committed** to the
+  public repo; it lives in the KV namespace (authoritative) and as a
+  private 90-day run artifact (offsite backup). A fresh clone adopts the
+  directory with a single `npm run sync:kv -- --pull`.
 - Deterministic checks (HTML parsing, schema, hreflang, robots, links, speed probe)
   produce the **same results** on Workers and Node.
 - Runtime-bound checks (raw DNS lookups, TLS certificate inspection) are not
