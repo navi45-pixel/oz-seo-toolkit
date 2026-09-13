@@ -67,8 +67,11 @@ async function handleBacklinks(request, env) {
     const all = await loadBacklinks(kv);
     const state = (url.searchParams.get('state') || '').toUpperCase();
     const cat = url.searchParams.get('category') || '';
-    const filtered = all.filter((b) => (!state || b.state === state) && (!cat || b.category === cat));
-    return json({ total: all.length, listings: filtered.reverse() });
+    const filtered = all
+      .filter((b) => (!state || b.state === state) && (!cat || b.category === cat))
+      .map(({ email, ...pub }) => pub) // submitter emails stay in storage, never in API responses
+      .reverse();
+    return json({ total: all.length, listings: filtered });
   }
 
   if (request.method !== 'POST') {
@@ -112,7 +115,7 @@ async function handleBacklinks(request, env) {
   await kv.put(BACKLINKS_KEY, JSON.stringify(list));
   backlinksCache = list; // same isolate: keep the cache coherent after writes
   backlinksCacheAt = Date.now();
-  return json({ ok: true, entry });
+  return json({ ok: true, entry: (({ email, ...pub }) => pub)(entry) });
 }
 
 export default {

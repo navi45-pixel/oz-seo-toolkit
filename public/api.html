@@ -361,7 +361,6 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
       "id": "kpx8z1ab2c3d",
       "name": "Sydney Garden Blog",
       "website": "https://example.com.au",
-      "email": "hi@example.com.au",   <span class="c">// note: currently returned publicly</span>
       "state": "NSW",
       "category": "Blogger",
       "description": "…",           <span class="c">// ≤ 400 chars</span>
@@ -370,6 +369,7 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
     }
   ]
 }</pre>
+    <div class="note">Submitter emails are collected at submission time (validated, stored for the operator) but are <b>never returned</b> by any endpoint — listings contain no <code>email</code> field.</div>
     <div class="runner">
       <div class="runner-row">
         <button class="btn" data-run="backlinks">Run live example</button>

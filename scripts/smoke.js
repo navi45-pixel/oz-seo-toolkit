@@ -61,12 +61,16 @@ async function main() {
     report(`GET /api/audit?url=${AUDIT_URL}`, false, e.message);
   }
 
-  // 3. Backlink directory (shape check — never mutates data)
+  // 3. Backlink directory (shape + privacy checks — never mutates data)
   try {
     const { status, json } = await getJson('/api/backlinks', 20_000);
     const shapeOk = json && typeof json.total === 'number' && Array.isArray(json.listings);
-    report('GET /api/backlinks', status === 200 && shapeOk,
-      shapeOk ? `total ${json.total}` : `status ${status}, unexpected shape`);
+    // Stored submissions do contain emails; the public API must never leak one.
+    const emailLeak = shapeOk && json.listings.some((l) => l.email != null);
+    report('GET /api/backlinks', status === 200 && shapeOk && !emailLeak,
+      shapeOk
+        ? `total ${json.total}${emailLeak ? ' — EMAIL LEAK: listing contains an email field' : ', no email fields'} `
+        : `status ${status}, unexpected shape`);
   } catch (e) {
     report('GET /api/backlinks', false, e.message);
   }

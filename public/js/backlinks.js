@@ -41,7 +41,6 @@ async function loadListings() {
         ${l.lookingFor ? `<p class="lf">&#128279; Looking for: ${esc(l.lookingFor)}</p>` : ''}
         <p style="margin-top:10px">
           <a href="${esc(l.website)}" target="_blank" rel="noopener nofollow ugc">Visit website &rarr;</a>
-          &nbsp;&middot;&nbsp; <a href="mailto:${esc(l.email)}">Contact</a>
         </p>
       </div>`).join('');
   } catch {

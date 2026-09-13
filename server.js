@@ -108,12 +108,17 @@ app.get('/api/speed', ah(async (req, res) => {
 }));
 
 // ---------- API: backlink directory ----------
+// Submitter emails are stored for the operator but NEVER exposed via the API.
+const publicListing = ({ email, ...pub }) => pub;
 app.get('/api/backlinks', ah(async (req, res) => {
   const all = loadBacklinks();
   const state = (req.query.state || '').toUpperCase();
   const cat = req.query.category || '';
-  const filtered = all.filter((b) => (!state || b.state === state) && (!cat || b.category === cat));
-  res.json({ total: all.length, listings: filtered.reverse() });
+  const filtered = all
+    .filter((b) => (!state || b.state === state) && (!cat || b.category === cat))
+    .map(publicListing)
+    .reverse();
+  res.json({ total: all.length, listings: filtered });
 }));
 
 app.post('/api/backlinks', ah(async (req, res) => {
@@ -146,7 +151,7 @@ app.post('/api/backlinks', ah(async (req, res) => {
   };
   list.push(entry);
   saveBacklinks(list);
-  res.json({ ok: true, entry });
+  res.json({ ok: true, entry: publicListing(entry) });
 }));
 
 // ---------- JSON error middleware: every failure returns JSON, never HTML/empty ----------

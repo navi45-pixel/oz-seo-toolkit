@@ -361,7 +361,7 @@ label.field input:focus, label.field select:focus, label.field textarea:focus { 
         <label class="field">Website URL *
           <input type="text" id="blWebsite" placeholder="e.g. sarahsgarden.com.au">
         </label>
-        <label class="field">Contact email * <small style="font-weight:400;color:#6d8a7f">(only shared with people who view your listing — not published)</small>
+        <label class="field">Contact email * <small style="font-weight:400;color:#6d8a7f">(kept private — never shown or listed publicly)</small>
           <input type="email" id="blEmail" placeholder="you@example.com">
         </label>
         <label class="field">State / territory *
@@ -504,7 +504,6 @@ async function loadListings() {
         ${l.lookingFor ? `<p class="lf">&#128279; Looking for: ${esc(l.lookingFor)}</p>` : ''}
         <p style="margin-top:10px">
           <a href="${esc(l.website)}" target="_blank" rel="noopener nofollow ugc">Visit website &rarr;</a>
-          &nbsp;&middot;&nbsp; <a href="mailto:${esc(l.email)}">Contact</a>
         </p>
       </div>`).join('');
   } catch {
