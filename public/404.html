@@ -78,6 +78,15 @@ main p.sub { color: var(--muted); max-width: 560px; margin: 14px auto 0; font-si
 .btn.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
 .hint { margin-top: 26px; font-size: 13px; color: var(--muted); }
 .hint code { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; font-size: 12px; color: var(--text); }
+.suggest {
+  max-width: 560px; margin: 26px auto 0; text-align: left;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 18px; font-size: 14px;
+}
+.suggest .asked-path { color: var(--muted); font-size: 12px; word-break: break-all; }
+.suggest .asked-path code { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; font-size: 12px; }
+.suggest a.sugg { font-weight: 800; font-size: 15px; }
+.suggest .why { color: var(--muted); font-size: 12px; margin-top: 4px; }
 
 footer.site { border-top: 1px solid var(--border); padding: 26px 0; color: var(--muted); font-size: 13px; }
 </style>
@@ -101,6 +110,11 @@ footer.site { border-top: 1px solid var(--border); padding: 26px 0; color: var(-
     <div class="code">404</div>
     <h1>This page wandered off into the outback</h1>
     <p class="sub">The link is broken or the page never existed — but every free tool is one click away.</p>
+    <div class="suggest" id="suggest" hidden>
+      <div class="asked-path">You asked for <code id="asked-path"></code></div>
+      <div style="margin-top:8px;">Did you mean <a class="sugg" id="sugg-link" href="/"></a>?</div>
+      <div class="why" id="sugg-why"></div>
+    </div>
     <div class="actions">
       <a class="btn" href="/">Run a free audit</a>
       <a class="btn secondary" href="/backlinks">Browse backlinks</a>
@@ -114,5 +128,54 @@ footer.site { border-top: 1px solid var(--border); padding: 26px 0; color: var(-
     &copy; 2026 OzSEO Toolkit &middot; free website audits, AI search visibility checks and a free Australian backlink directory
   </div>
 </footer>
+<script>
+(function () {
+  'use strict';
+  // Suggest the closest real page for the requested (404) path. Purely
+  // client-side so Node and Workers behave identically.
+  var PAGES = [
+    { path: '/', title: 'the Free Website Audit', why: 'full audit across SEO, AI/GEO, speed, security & local SEO', kw: ['audit', 'seo', 'speed', 'checker', 'check', 'home', 'lighthouse', 'geo', 'website'] },
+    { path: '/backlinks', title: 'the Free Backlinks Directory', why: 'list your site free and find Australian bloggers', kw: ['backlink', 'backlinks', 'link', 'links', 'directory', 'blogger', 'bloggers', 'guest', 'listing', 'freebies'] },
+    { path: '/skills', title: 'the Skills Hub', why: '25 integrated SEO skill modules and playbooks', kw: ['skills', 'skill', 'modules', 'module', 'playbook', 'playbooks', 'hub', 'training', 'courses'] },
+    { path: '/api', title: 'the API Reference', why: 'every endpoint, parameter and response shape, live', kw: ['api', 'endpoint', 'endpoints', 'reference', 'docs', 'documentation', 'json', 'rest'] },
+  ];
+  var asked = location.pathname.toLowerCase();
+  var words = asked.split(/[^a-z0-9]+/).filter(Boolean);
+  if (!words.length) return; // '/' never 404s
+
+  function bigrams(s) { var r = []; for (var i = 0; i < s.length - 1; i++) r.push(s.slice(i, i + 2)); return r; }
+  function dice(a, b) {
+    var A = bigrams(a), B = bigrams(b); if (!A.length || !B.length) return 0;
+    var pool = B.slice(), inter = 0;
+    A.forEach(function (g) { var i = pool.indexOf(g); if (i > -1) { inter++; pool.splice(i, 1); } });
+    return (2 * inter) / (A.length + B.length);
+  }
+
+  var best = null, bestScore = 0, bestWord = '';
+  PAGES.forEach(function (p) {
+    var pageScore = 0, hitWord = '';
+    if (p.path !== '/' && (asked + '/').indexOf(p.path) === 0) { pageScore = 100; hitWord = p.path.slice(1); }
+    words.forEach(function (w) {
+      p.kw.forEach(function (k) {
+        var s;
+        if (w === k) s = 95;            // exact keyword hit
+        else if (w === k + 's' || w === k.replace(/s$/, '')) s = 90; // plural/singular
+        else s = Math.round(dice(w, k) * 85); // fuzzy typo distance
+        if (s > pageScore) { pageScore = s; hitWord = w; }
+      });
+    });
+    if (pageScore > bestScore) { bestScore = pageScore; best = p; bestWord = hitWord; }
+  });
+
+  if (!best || bestScore < 40) return; // no confident match — keep the generic message
+  document.getElementById('asked-path').textContent = location.pathname;
+  var link = document.getElementById('sugg-link');
+  link.href = best.path;
+  link.textContent = best.title;
+  document.getElementById('sugg-why').textContent =
+    (bestScore >= 95 ? 'Matched "' + bestWord + '" — ' : 'Looks like a typo for "' + bestWord + '" — ') + best.why + '.';
+  document.getElementById('suggest').hidden = false;
+})();
+</script>
 </body>
 </html>

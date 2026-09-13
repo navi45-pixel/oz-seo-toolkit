@@ -51,7 +51,10 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
   triggered from the Cloudflare dashboard's Workers Builds skip this, so run
   `npm run deploy` locally after page changes to keep dates fresh)
 - Branded 404s: unknown page URLs serve a styled `public/404.html` (site
-  chrome, links back to the tools, `noindex`) with a true 404 status; unknown
+  chrome, links back to the tools, `noindex`) with a true 404 status — plus a
+  client-side suggestion box that fuzzy-matches the requested path against the
+  four real pages (exact keyword, plural/singular and bigram typo distance)
+  and offers the closest one when confident; unknown
   `/api/*` routes get a JSON 404 error — identical behaviour on Node (catch-all
   middleware) and Workers (asset-miss fallback)
 - Share & trust hygiene: every page carries Open Graph/Twitter cards (using

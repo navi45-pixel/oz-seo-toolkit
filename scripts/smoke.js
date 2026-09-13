@@ -160,8 +160,9 @@ async function main() {
     const res = await fetch(BASE + '/definitely-not-a-page', { signal: AbortSignal.timeout(20_000), redirect: 'manual' });
     const text = await res.text();
     const branded = res.status === 404 && text.includes('OzSEO Toolkit') && (res.headers.get('content-type') || '').includes('text/html');
-    report('GET /definitely-not-a-page (branded 404)', branded,
-      branded ? 'status 404, HTML page with site chrome' : `status ${res.status}, content-type ${res.headers.get('content-type')}`);
+    const suggester = text.includes('sugg-link') && text.includes("location.pathname");
+    report('GET /definitely-not-a-page (branded 404)', branded && suggester,
+      branded && suggester ? 'status 404, HTML page with site chrome + smart suggester' : `status ${res.status}, content-type ${res.headers.get('content-type')}${branded ? ', suggester MISSING' : ''}`);
   } catch (e) {
     report('GET /definitely-not-a-page (branded 404)', false, e.message);
   }
