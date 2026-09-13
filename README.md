@@ -32,6 +32,11 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
   listings arrive mid-scroll; offset paging still works)
 - 14 curated free backlink sources for Australia (Google Business Profile, Bing Places, Apple Business Connect, Yellow Pages, TrueLocal, Hotfrog, Qwoted, Featured, …) — 13 external sites plus this directory itself
 - Backlink safety tips
+- Listing links are crawl-safe by design: submitted URLs are normalized at
+  intake (UTM/tracking params, query strings and fragments stripped, stored
+  scheme-canonicalized) and rendered with `rel="nofollow ugc"` — so listings
+  never leak paid-link signals or tracking URLs, and all toolkit pages carry
+  self-canonical tags
 
 ## Built entirely on free GitHub repos & free APIs
 - [Express](https://github.com/expressjs/express) — web server

@@ -73,7 +73,12 @@ const clean = (s, max) => String(s || '').replace(/[<>]/g, '').trim().slice(0, m
 function validUrl(u) {
   try {
     const p = new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u);
-    return p.hostname.includes('.') ? p.href : null;
+    if (!p.hostname.includes('.')) return null;
+    // Same normalization as server.js: strip UTM/tracking params, any query
+    // string and the fragment — listings link to the clean canonical URL.
+    p.hash = '';
+    p.search = '';
+    return p.href;
   } catch { return null; }
 }
 

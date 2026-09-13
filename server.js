@@ -50,7 +50,13 @@ function clean(s, max) {
 function validUrl(u) {
   try {
     const p = new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u);
-    return p.hostname.includes('.') ? p.href : null;
+    if (!p.hostname.includes('.')) return null;
+    // Store a clean canonical web link: strip UTM/tracking params, any other
+    // query string, and the fragment. These links are directory content, not
+    // attribution channels — and they keep the listing pages crawl-clean.
+    p.hash = '';
+    p.search = '';
+    return p.href;
   } catch { return null; }
 }
 
