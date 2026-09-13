@@ -298,9 +298,14 @@ const withSecurityHeaders = (res) => {
   const h = new Headers(res.headers);
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) h.set(k, v);
   // Cache policy: HTML always revalidates; other static files cache a day.
+  // The asset layer pre-sets its own cache-control (max-age=0), so non-HTML
+  // must OVERRIDE it, not just fill a blank.
   const ct = h.get('content-type') || '';
-  const isHtml = ct.includes('text/html');
-  if (!h.has('cache-control')) h.set('cache-control', isHtml ? 'public, max-age=0, must-revalidate' : 'public, max-age=86400');
+  if (ct.includes('text/html')) {
+    if (!h.has('cache-control')) h.set('cache-control', 'public, max-age=0, must-revalidate');
+  } else {
+    h.set('cache-control', 'public, max-age=86400');
+  }
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
 };
 
