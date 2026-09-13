@@ -45,7 +45,11 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
   unbounded audit endpoints and the operator-only `/api/admin/`), points at
   `public/sitemap.xml`, which lists the four site pages (`/`, `/backlinks`,
   `/skills`, `/api`) at their canonical workers.dev URLs — served on Node
-  (Express static) and Workers (Static Assets) alike
+  (Express static) and Workers (Static Assets) alike. Sitemap `<lastmod>`
+  dates are regenerated from git commit history by `npm run gen:sitemap`,
+  which `deploy.sh` runs automatically before every deploy (note: deploys
+  triggered from the Cloudflare dashboard's Workers Builds skip this, so run
+  `npm run deploy` locally after page changes to keep dates fresh)
 
 ## Built entirely on free GitHub repos & free APIs
 - [Express](https://github.com/expressjs/express) — web server

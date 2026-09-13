@@ -23,6 +23,9 @@ for arg in "$@"; do
   esac
 done
 
+echo "==> Refreshing sitemap lastmod dates from git history..."
+node scripts/gen-sitemap.js
+
 echo "==> Deploying to Cloudflare Workers..."
 DEPLOY_OUTPUT=$(npx -y wrangler deploy 2>&1)
 echo "$DEPLOY_OUTPUT"

@@ -15,6 +15,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history so gen-sitemap.js can read real per-file commit dates
+          # (a shallow clone would fall back to checkout mtimes).
+          fetch-depth: 0
+
+      - name: Refresh sitemap lastmod dates
+        run: node scripts/gen-sitemap.js
 
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3

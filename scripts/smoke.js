@@ -137,8 +137,18 @@ async function main() {
     const paths = ['/', '/backlinks', '/skills', '/api'];
     const missing = paths.filter((p) => !new RegExp(`<loc>[^<]*${p === '/' ? '/' : p}</loc>`).test(text));
     const locCount = (text.match(/<loc>/g) || []).length;
-    report('GET /sitemap.xml', res.status === 200 && locCount === 4 && missing.length === 0,
-      locCount === 4 && missing.length === 0 ? `lists all ${locCount} pages` : `status ${res.status}, ${locCount} urls, missing: ${missing.join(', ') || 'none'}`);
+    // Every <url> block must carry a valid, non-future <lastmod> (the sitemap
+    // protocol requires it; gen-sitemap.js keeps dates fresh from git).
+    const blocks = text.match(/<url>[\s\S]*?<\/url>/g) || [];
+    const today = new Date().toISOString().slice(0, 10);
+    const badDates = blocks.filter((b) => {
+      const m = b.match(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/);
+      return !m || m[1] > today;
+    });
+    report('GET /sitemap.xml', res.status === 200 && locCount === 4 && missing.length === 0 && badDates.length === 0,
+      locCount === 4 && missing.length === 0 && badDates.length === 0
+        ? `lists all ${locCount} pages, all lastmod dates valid`
+        : `status ${res.status}, ${locCount} urls, missing: ${missing.join(', ') || 'none'}${badDates.length ? `, invalid/missing lastmod: ${badDates.length}` : ''}`);
   } catch (e) {
     report('GET /sitemap.xml', false, e.message);
   }
