@@ -54,6 +54,13 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
   chrome, links back to the tools, `noindex`) with a true 404 status; unknown
   `/api/*` routes get a JSON 404 error — identical behaviour on Node (catch-all
   middleware) and Workers (asset-miss fallback)
+- Share & trust hygiene: every page carries Open Graph/Twitter cards (using
+  `public/og-image.png`, regenerable via `node scripts/make-og-image.js`) and
+  typed JSON-LD (WebSite / CollectionPage / ItemList / WebAPI); all responses
+  set HSTS, `X-Content-Type-Options`, `X-Frame-Options: DENY`, Referrer-Policy,
+  Permissions-Policy and a strict CSP (inline-only, no external resources) —
+  identical on Node (middleware) and Workers (`run_worker_first` + header
+  wrapper, since asset-first routing would otherwise bypass the worker)
 
 ## Built entirely on free GitHub repos & free APIs
 - [Express](https://github.com/expressjs/express) — web server

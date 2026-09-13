@@ -12,3 +12,7 @@ id = "2b4845a99d4f43729bdc6df50a1fd440"
 [assets]
 directory = "./public"
 binding = "ASSETS"
+# Always invoke the worker first so security headers (CSP, HSTS, XFO, ...)
+# apply to page responses too — with asset-first routing the worker is
+# bypassed for asset URLs and pages would ship without headers.
+run_worker_first = true

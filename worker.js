@@ -273,38 +273,62 @@ async function handleBacklinks(request, env) {
   return json({ ok: true, entry: (({ email, ...pub }) => pub)(entry) });
 }
 
+// Security headers applied to every response (mirrored in server.js).
+// CSP matches the site's reality: inline styles/scripts only, no external resources.
+const SECURITY_HEADERS = {
+  'strict-transport-security': 'max-age=31536000; includeSubDomains',
+  'x-content-type-options': 'nosniff',
+  'x-frame-options': 'DENY',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  'permissions-policy': 'camera=(), microphone=(), geolocation=()',
+  'content-security-policy': [
+    "default-src 'none'",
+    "style-src 'unsafe-inline'",
+    "script-src 'unsafe-inline'",
+    "img-src 'self' data:",
+    "connect-src 'self'",
+    "form-action 'self'",
+    "base-uri 'none'",
+    "frame-ancestors 'none'",
+  ].join('; '),
+};
+const withSecurityHeaders = (res) => {
+  // Responses from env.ASSETS.fetch() have immutable headers in workerd —
+  // clone into a fresh Response instead of mutating.
+  const h = new Headers(res.headers);
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) h.set(k, v);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     try {
-      if (url.pathname === '/api/health') return json({ ok: true, runtime: 'cloudflare-workers' });
-      if (url.pathname === '/api/audit') return json(await runAudit(url.searchParams.get('url')));
+      if (url.pathname === '/api/health') return withSecurityHeaders(json({ ok: true, runtime: 'cloudflare-workers' }));
+      if (url.pathname === '/api/audit') return withSecurityHeaders(json(await runAudit(url.searchParams.get('url'))));
       if (url.pathname === '/api/perf') {
         const p = await probePerformance(url.searchParams.get('url'));
-        return p ? json(p) : json({ error: 'Could not reach that site.' }, 400);
+        return withSecurityHeaders(p ? json(p) : json({ error: 'Could not reach that site.' }, 400));
       }
       if (url.pathname === '/api/speed') {
         const strategy = url.searchParams.get('strategy') === 'desktop' ? 'desktop' : 'mobile';
-        return json(await runSpeedTest(url.searchParams.get('url'), strategy));
+        return withSecurityHeaders(json(await runSpeedTest(url.searchParams.get('url'), strategy)));
       }
-      if (url.pathname.startsWith('/api/admin/listings')) return handleAdmin(request, env, url);
-      if (url.pathname.startsWith('/api/backlinks')) return handleBacklinks(request, env);
-      // Pages
-      let p = url.pathname;
-      if (p === '/backlinks') p = '/backlinks.html';
-      if (p === '/skills') p = '/skills.html';
-      if (p === '/api') p = '/api.html';
-      url.pathname = p;
+      if (url.pathname.startsWith('/api/admin/listings')) return withSecurityHeaders(await handleAdmin(request, env, url));
+      if (url.pathname.startsWith('/api/backlinks')) return withSecurityHeaders(await handleBacklinks(request, env));
+      // Pages: fetch the original URL — the asset layer resolves clean
+      // (extension-less) URLs itself. Fetching /backlinks.html instead would
+      // 307 back to /backlinks and loop forever.
       const assetRes = await env.ASSETS.fetch(new Request(url.toString(), request));
-      if (assetRes.status !== 404) return assetRes;
+      if (assetRes.status !== 404) return withSecurityHeaders(assetRes);
       // Missing asset: JSON 404 for API paths, branded 404 page otherwise.
       if (url.pathname.startsWith('/api/')) {
-        return json({ error: `No such endpoint: ${request.method} ${url.pathname}` }, 404);
+        return withSecurityHeaders(json({ error: `No such endpoint: ${request.method} ${url.pathname}` }, 404));
       }
       const nf = await env.ASSETS.fetch(new Request(new URL('/404', url).toString(), request));
-      return new Response(nf.body, { status: 404, headers: nf.headers });
+      return withSecurityHeaders(new Response(nf.body, { status: 404, headers: nf.headers }));
     } catch (e) {
-      return json({ error: e.message || 'Audit failed' }, 400);
+      return withSecurityHeaders(json({ error: e.message || 'Audit failed' }, 400));
     }
   },
 };
