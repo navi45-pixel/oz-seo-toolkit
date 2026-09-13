@@ -41,6 +41,11 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
   scheme-canonicalized) and rendered with `rel="nofollow ugc"` — so listings
   never leak paid-link signals or tracking URLs, and all toolkit pages carry
   self-canonical tags
+- Crawler files: `public/robots.txt` allows all crawlers (blocking only the
+  unbounded audit endpoints and the operator-only `/api/admin/`), points at
+  `public/sitemap.xml`, which lists the four site pages (`/`, `/backlinks`,
+  `/skills`, `/api`) at their canonical workers.dev URLs — served on Node
+  (Express static) and Workers (Static Assets) alike
 
 ## Built entirely on free GitHub repos & free APIs
 - [Express](https://github.com/expressjs/express) — web server

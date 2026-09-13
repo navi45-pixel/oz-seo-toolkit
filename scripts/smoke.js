@@ -11,7 +11,10 @@
  *   1. /api/health answers ok:true
  *   2. GET /api/audit?url=example.com returns a valid scored report
  *      (overall 0-100, exactly 8 scored groups, non-null SEO score)
- *   3. Pages /, /backlinks, /skills, /api all return 200
+ *   3. Backlinks API shape (no email leak) + pagination + cursor contracts
+ *   4. Moderation endpoints are never publicly readable
+ *   5. robots.txt and sitemap.xml exist and cross-reference each other
+ *   6. Pages /, /backlinks, /skills, /api all return 200
  */
 'use strict';
 
@@ -116,7 +119,31 @@ async function main() {
     report('GET /api/admin/listings locked', false, e.message);
   }
 
-  // 4. Pages
+  // 4. SEO crawler files: robots.txt must allow crawling and point at the
+  //    sitemap; sitemap.xml must list exactly the four site pages.
+  try {
+    const res = await fetch(BASE + '/robots.txt', { signal: AbortSignal.timeout(20_000) });
+    const text = await res.text();
+    const sitemapOk = /sitemap:\s*\S+\/sitemap\.xml/i.test(text);
+    const typeOk = (res.headers.get('content-type') || '').includes('text/plain');
+    report('GET /robots.txt', res.status === 200 && sitemapOk && typeOk,
+      `status ${res.status}, sitemap directive ${sitemapOk ? 'present' : 'MISSING'}`);
+  } catch (e) {
+    report('GET /robots.txt', false, e.message);
+  }
+  try {
+    const res = await fetch(BASE + '/sitemap.xml', { signal: AbortSignal.timeout(20_000) });
+    const text = await res.text();
+    const paths = ['/', '/backlinks', '/skills', '/api'];
+    const missing = paths.filter((p) => !new RegExp(`<loc>[^<]*${p === '/' ? '/' : p}</loc>`).test(text));
+    const locCount = (text.match(/<loc>/g) || []).length;
+    report('GET /sitemap.xml', res.status === 200 && locCount === 4 && missing.length === 0,
+      locCount === 4 && missing.length === 0 ? `lists all ${locCount} pages` : `status ${res.status}, ${locCount} urls, missing: ${missing.join(', ') || 'none'}`);
+  } catch (e) {
+    report('GET /sitemap.xml', false, e.message);
+  }
+
+  // 5. Pages
   for (const p of ['/', '/backlinks', '/skills', '/api']) {
     try {
       const res = await fetch(BASE + p, { signal: AbortSignal.timeout(20_000) });

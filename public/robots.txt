@@ -1,0 +1,15 @@
+# robots.txt — OzSEO Toolkit
+# https://oz-seo-toolkit.multani-navdeep29.workers.dev
+
+User-agent: *
+Allow: /
+
+# Crawl-trap avoidance: unbounded query-param endpoints, no crawl value.
+Disallow: /api/audit
+Disallow: /api/perf
+Disallow: /api/speed
+
+# Operator-only moderation API — nothing here for crawlers.
+Disallow: /api/admin/
+
+Sitemap: https://oz-seo-toolkit.multani-navdeep29.workers.dev/sitemap.xml
