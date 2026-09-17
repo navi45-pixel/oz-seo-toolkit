@@ -148,7 +148,11 @@ survives the custom-domain swap) or takes an explicit URL:
 `node scripts/check-drift.js https://<worker>.workers.dev` (`--local` for
 localhost). The scheduled **drift.yml** workflow runs it daily and opens a
 deduplicated GitHub issue on any difference; it also runs after every
-`npm run deploy`.
+`npm run deploy`. The same workflow's **kv-drift** job verifies the Workers
+KV directory still matches the repo-side store (the latest private
+`backlinks-merged` artifact from sync-kv.yml — `data/backlinks.json` is
+gitignored because it holds submitter emails), catching a KV key deleted
+or overwritten out-of-band between daily syncs.
 - Pages (`/`, `/backlinks`, `/crawl`, `/skills`, `/api`) are served from `public/` as Static Assets.
 - `/api/audit`, `/api/perf`, `/api/speed`, `/api/health` run the identical engine.
 - The backlink directory persists in a **KV namespace** (`BACKLINKS`, id

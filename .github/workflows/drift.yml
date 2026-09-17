@@ -1,15 +1,23 @@
 name: Drift check (deployed worker vs repo)
 
 # The deployed worker must always behave like the code in this repo.
-# This job diffs the live workers.dev site against repo-side expectations
+#
+# Job 1 (drift) diffs the live workers.dev site against repo-side expectations
 # (scripts/check-drift.js): security headers and cache policy from
 # lib/security-headers.js, the HTTP→HTTPS 301, page/canonical/og:url tags,
 # per-page content fingerprints (title, description, headings, nav, FAQ),
 # robots.txt rules, sitemap <loc>/<lastmod>, and the /api/health contract.
-#
 # It catches: a stale or failed deploy, a Cloudflare dashboard setting
 # changed by hand, a public file edited without redeploying, or any code
 # change that reached the edge without passing CI.
+#
+# Job 2 (kv-drift) verifies the Workers KV backlink directory still holds
+# exactly the repo-side store (the latest backlinks-merged artifact from
+# sync-kv.yml, which runs at 21:17 UTC, converges both stores and uploads
+# the merged copy as a private artifact). It catches a KV key deleted,
+# swapped or overwritten out-of-band between sync runs. The baseline is an
+# artifact rather than git because data/backlinks.json is gitignored — it
+# contains submitter emails and must never be committed to this repo.
 #
 # The deploy origin is derived from public/sitemap.xml (the same canonical
 # origin the pages use), so there is exactly one place to update when the
@@ -17,13 +25,19 @@ name: Drift check (deployed worker vs repo)
 
 on:
   schedule:
-    # 22:05 UTC daily — outside the sync-kv (14:05 UTC) and CI windows.
+    # 22:05 UTC daily — shortly after the 21:17 UTC sync-kv run whose
+    # artifact this workflow compares the KV namespace against.
     - cron: "5 22 * * *"
   workflow_dispatch: {}
 
 concurrency:
   group: drift-${{ github.ref }}
   cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
 
 jobs:
   drift:
@@ -62,6 +76,101 @@ jobs:
               '',
               'Likely causes: a stale or failed deploy, a Cloudflare dashboard setting changed by hand,',
               'or a public file edited without redeploying. Fix: `npm run deploy`, or revert the change.',
+            ].join('\n');
+            const existing = await github.rest.issues.listForRepo({
+              ...context.repo, state: 'open', per_page: 100,
+            });
+            const dup = existing.data.find((i) => i.title === title);
+            if (dup) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: dup.number, body });
+            } else {
+              await github.rest.issues.create({ ...context.repo, title, body, labels: ['drift', 'bug'] });
+            }
+
+  # The Workers KV directory must equal the repo-side store. sync-kv.yml
+  # converges both stores daily and uploads the merged copy as the private
+  # backlinks-merged artifact; this job reads KV back (via sync-kv.js
+  # --check, verify-only) and fails if the namespace no longer matches.
+  kv-drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: Workers KV vs repo store
+    steps:
+      - name: Guard — is KV access configured?
+        id: guard
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -n "$CF_TOKEN" ]; then
+            echo "has_token=1" >> "$GITHUB_OUTPUT"
+            echo "CLOUDFLARE_API_TOKEN is configured — running the KV drift check."
+          else
+            echo "has_token=0" >> "$GITHUB_OUTPUT"
+            echo "CLOUDFLARE_API_TOKEN is not set — the KV drift check cannot read the namespace."
+          fi
+
+      - name: Checkout
+        if: steps.guard.outputs.has_token == '1'
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: steps.guard.outputs.has_token == '1'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.guard.outputs.has_token == '1'
+        run: npm ci
+
+      # The repo-side baseline. data/backlinks.json is gitignored (emails!),
+      # so the comparison uses the merged store from the most recent
+      # successful sync-kv run — which is exactly what KV held at the end of
+      # that run (sync-kv verifies its own write).
+      - name: Fetch the repo-side directory (backlinks-merged artifact)
+        id: fetch
+        if: steps.guard.outputs.has_token == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_ID=$(gh run list --workflow sync-kv.yml --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+          if [ -z "$RUN_ID" ]; then
+            echo "No successful sync-kv.yml run yet — no baseline artifact to compare against."
+            echo "Run sync-kv.yml once (manually) to create the baseline. Skipping the KV check."
+            echo "skipped=1" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          gh run download "$RUN_ID" --name backlinks-merged --dir data/
+          test -f data/backlinks.json
+          echo "Baseline: backlinks-merged artifact from sync-kv run $RUN_ID"
+          echo "Listings in baseline: $(node -e "console.log(require('./data/backlinks.json').length)")"
+
+      - name: KV vs repo-store check (verify only)
+        if: steps.guard.outputs.has_token == '1' && steps.fetch.outputs.skipped != '1'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/sync-kv.js --check
+
+      - name: Open an issue on KV drift
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Drift detected: Workers KV directory differs from the repo store';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              'The scheduled KV drift check found the Workers KV backlink directory no longer matches the repo-side store.',
+              '',
+              `Run: ${runUrl}`,
+              '',
+              'Likely causes: the KV key was deleted, swapped or overwritten out-of-band, the namespace id in',
+              'wrangler.toml changed, or sync-kv.yml stopped converging the stores.',
+              'Fix: run sync-kv.yml (pull-merge converges both sides), or locally `npm run sync:kv -- --pull`.',
+              '',
+              'Inspect the current KV value:',
+              '`npx wrangler kv key get backlinks --namespace-id <id from wrangler.toml> --remote`.',
             ].join('\n');
             const existing = await github.rest.issues.listForRepo({
               ...context.repo, state: 'open', per_page: 100,
