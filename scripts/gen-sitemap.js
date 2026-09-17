@@ -32,10 +32,11 @@ const PAGES = [
   { path: '/api', source: 'public/api.html' },
 ];
 
-const TZ_OFFSET_MS = new Date().getTimezoneOffset() * 60_000;
-
+// All dates are UTC: the sitemap protocol has no timezone and the smoke test
+// compares against the UTC day, so a local-timezone date here reads as
+// "in the future" for any UTC-side checker half the day.
 function utcDate(ms) {
-  return new Date(ms - TZ_OFFSET_MS).toISOString().slice(0, 10);
+  return new Date(ms).toISOString().slice(0, 10);
 }
 
 function gitLastCommitDate(repoRelPath) {
@@ -45,7 +46,11 @@ function gitLastCommitDate(repoRelPath) {
       ['log', '-1', '--format=%cI', '--', repoRelPath],
       { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
     ).trim();
-    if (/^\d{4}-\d{2}-\d{2}/.test(out)) return out.slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}/.test(out)) {
+      // %cI carries a local offset (e.g. +10:00) — normalise to the UTC day,
+      // clamped to now so clock skew can never emit a future date.
+      return utcDate(Math.min(new Date(out).getTime(), Date.now()));
+    }
   } catch { /* fall through to mtime */ }
   // Fallback: shallow clones may have no history for this file — use mtime,
   // clamped to today so a restored checkout can't claim a future date.

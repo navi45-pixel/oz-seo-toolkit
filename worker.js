@@ -287,6 +287,24 @@ const withSecurityHeaders = (res) => {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
 };
 
+// Page-serving path shared by the catch-all route and /api/drift's
+// self-verification: a Worker fetching its own public URL is blocked at the
+// edge (404 block page, not the worker), so the drift endpoint re-enters
+// this exact pipeline through the assets binding instead of the network.
+const servePage = async (request, env, url) => {
+  // Pages: fetch the original URL — the asset layer resolves clean
+  // (extension-less) URLs itself. Fetching /backlinks.html instead would
+  // 307 back to /backlinks and loop forever.
+  const assetRes = await env.ASSETS.fetch(new Request(url.toString(), request));
+  if (assetRes.status !== 404) return withSecurityHeaders(assetRes);
+  // Missing asset: JSON 404 for API paths, branded 404 page otherwise.
+  if (url.pathname.startsWith('/api/')) {
+    return withSecurityHeaders(json({ error: `No such endpoint: ${request.method} ${url.pathname}` }, 404));
+  }
+  const nf = await env.ASSETS.fetch(new Request(new URL('/404', url).toString(), request));
+  return withSecurityHeaders(new Response(nf.body, { status: 404, headers: nf.headers }));
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -300,7 +318,14 @@ export default {
       }
       if (url.pathname === '/api/health') return withSecurityHeaders(json({ ok: true, runtime: 'cloudflare-workers' }));
       if (url.pathname === '/api/drift') {
-        const result = await runSelfDrift({ origin: url.origin });
+        // Self-verification must not use the network: a Worker fetching its
+        // own URL is blocked at the edge. Re-enter the real serving pipeline
+        // (assets binding + security headers) via selfFetch instead.
+        const selfFetch = async (path) => {
+          const res = await servePage(request, env, new URL(path, url.origin));
+          return { status: res.status, headers: res.headers, text: await res.text() };
+        };
+        const result = await runSelfDrift({ origin: url.origin, selfFetch });
         return withSecurityHeaders(json(result, result.ok ? 200 : 503));
       }
       if (url.pathname === '/api/audit') return withSecurityHeaders(json(await runAudit(url.searchParams.get('url'))));
@@ -319,17 +344,7 @@ export default {
       }
       if (url.pathname.startsWith('/api/admin/listings')) return withSecurityHeaders(await handleAdmin(request, env, url));
       if (url.pathname.startsWith('/api/backlinks')) return withSecurityHeaders(await handleBacklinks(request, env));
-      // Pages: fetch the original URL — the asset layer resolves clean
-      // (extension-less) URLs itself. Fetching /backlinks.html instead would
-      // 307 back to /backlinks and loop forever.
-      const assetRes = await env.ASSETS.fetch(new Request(url.toString(), request));
-      if (assetRes.status !== 404) return withSecurityHeaders(assetRes);
-      // Missing asset: JSON 404 for API paths, branded 404 page otherwise.
-      if (url.pathname.startsWith('/api/')) {
-        return withSecurityHeaders(json({ error: `No such endpoint: ${request.method} ${url.pathname}` }, 404));
-      }
-      const nf = await env.ASSETS.fetch(new Request(new URL('/404', url).toString(), request));
-      return withSecurityHeaders(new Response(nf.body, { status: 404, headers: nf.headers }));
+      return servePage(request, env, url);
     } catch (e) {
       return withSecurityHeaders(json({ error: e.message || 'Audit failed' }, 400));
     }
