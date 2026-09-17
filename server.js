@@ -14,25 +14,10 @@ const app = express();
 // random port, breaking the live preview connection — only honour a real port.
 const PORT = process.env.PORT && Number(process.env.PORT) > 0 ? Number(process.env.PORT) : 3000;
 app.disable('x-powered-by');
-// ---------- Security headers on every response (mirrored in worker.js) ----------
-// CSP: pages use inline <style> and inline <script>; no external resources.
-const SECURITY_HEADERS = {
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy': [
-    "default-src 'none'",
-    "style-src 'unsafe-inline'",
-    "script-src 'unsafe-inline'",
-    "img-src 'self' data:",
-    "connect-src 'self'",
-    "form-action 'self'",
-    "base-uri 'none'",
-    "frame-ancestors 'none'",
-  ].join('; '),
-};
+// ---------- Security headers on every response ----------
+// Single source of truth shared with worker.js (lib/security-headers.js),
+// so the two runtimes cannot drift.
+const { SECURITY_HEADERS } = require('./lib/security-headers.js');
 app.use((_req, res, next) => { for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v); next(); });
 // Cache policy: HTML always revalidates (content changes with deploys);
 // static files (og-image, robots, sitemap, favicon) cache for a day.

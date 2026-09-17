@@ -43,6 +43,9 @@ if [ "$SMOKE" -eq 1 ]; then
   echo
   echo "==> Smoke testing $TARGET ..."
   node scripts/smoke.js "$TARGET"
+  echo
+  echo "==> Drift check: live behaviour vs repo (headers, cache, canonicals, robots, sitemap)..."
+  DRIFT_BASE_URL="$TARGET" node scripts/check-drift.js "$TARGET"
 else
   echo
   echo "==> Deploy complete (smoke test skipped)."

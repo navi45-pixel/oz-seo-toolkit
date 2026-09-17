@@ -21,6 +21,7 @@ import { probePerformance } from './lib/perfprobe.js';
 import { runCrawl } from './lib/crawl.js';
 import { checkSubmission, clientKey } from './lib/ratelimit.js';
 import { authorize } from './lib/admin.js';
+import { SECURITY_HEADERS, applyCachePolicy } from './lib/security-headers.js';
 
 const json = (obj, status = 200, extraHeaders = {}) =>
   new Response(JSON.stringify(obj), {
@@ -274,39 +275,14 @@ async function handleBacklinks(request, env) {
   return json({ ok: true, entry: (({ email, ...pub }) => pub)(entry) });
 }
 
-// Security headers applied to every response (mirrored in server.js).
-// CSP matches the site's reality: inline styles/scripts only, no external resources.
-const SECURITY_HEADERS = {
-  'strict-transport-security': 'max-age=31536000; includeSubDomains',
-  'x-content-type-options': 'nosniff',
-  'x-frame-options': 'DENY',
-  'referrer-policy': 'strict-origin-when-cross-origin',
-  'permissions-policy': 'camera=(), microphone=(), geolocation=()',
-  'content-security-policy': [
-    "default-src 'none'",
-    "style-src 'unsafe-inline'",
-    "script-src 'unsafe-inline'",
-    "img-src 'self' data:",
-    "connect-src 'self'",
-    "form-action 'self'",
-    "base-uri 'none'",
-    "frame-ancestors 'none'",
-  ].join('; '),
-};
+// Security headers come from lib/security-headers.js — the single copy
+// shared with server.js, so the two runtimes cannot drift.
 const withSecurityHeaders = (res) => {
   // Responses from env.ASSETS.fetch() have immutable headers in workerd —
   // clone into a fresh Response instead of mutating.
   const h = new Headers(res.headers);
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) h.set(k, v);
-  // Cache policy: HTML always revalidates; other static files cache a day.
-  // The asset layer pre-sets its own cache-control (max-age=0), so non-HTML
-  // must OVERRIDE it, not just fill a blank.
-  const ct = h.get('content-type') || '';
-  if (ct.includes('text/html')) {
-    if (!h.has('cache-control')) h.set('cache-control', 'public, max-age=0, must-revalidate');
-  } else {
-    h.set('cache-control', 'public, max-age=86400');
-  }
+  applyCachePolicy(h);
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
 };
 

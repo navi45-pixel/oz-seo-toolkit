@@ -127,10 +127,24 @@ npm run deploy               # deploy + automatic smoke test of the live URL
 npx wrangler deploy          # deploy only
 ```
 `npm run deploy` runs `deploy.sh`: it deploys, extracts the live workers.dev
-URL from wrangler's output, then runs the shared smoke tests against it
-(`--no-smoke` to skip; `BASE_URL=https://... npm run deploy` smoke-tests a
-different URL instead of the freshly deployed one). CI runs the same
+URL from wrangler's output, then runs the shared smoke tests **and a drift
+check** against it (`--no-smoke` to skip; `BASE_URL=https://... npm run deploy`
+targets a different URL instead of the freshly deployed one). CI runs the same
 `scripts/smoke.js`, so local, CI, and post-deploy checks cannot drift.
+
+**Drift detection** — `npm run check:drift` diffs the deployed worker's
+*behaviour* against the repo so a stale deploy, a hand-changed Cloudflare
+dashboard setting, or an undeployed file edit gets caught automatically:
+security headers + cache policy (read back from `lib/security-headers.js`,
+the single copy shared by Node and Workers), the HTTP→HTTPS 301, every page
+returning 200 with its repo canonical/`og:url` tags, robots.txt rules,
+sitemap `<loc>`/`<lastmod>` validity and the `/api/health` contract. It
+derives the deploy origin from `public/sitemap.xml` (one source of truth —
+survives the custom-domain swap) or takes an explicit URL:
+`node scripts/check-drift.js https://<worker>.workers.dev` (`--local` for
+localhost). The scheduled **drift.yml** workflow runs it daily and opens a
+deduplicated GitHub issue on any difference; it also runs after every
+`npm run deploy`.
 - Pages (`/`, `/backlinks`, `/crawl`, `/skills`, `/api`) are served from `public/` as Static Assets.
 - `/api/audit`, `/api/perf`, `/api/speed`, `/api/health` run the identical engine.
 - The backlink directory persists in a **KV namespace** (`BACKLINKS`, id
