@@ -196,6 +196,7 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
     <p class="sub">Everything the OzSEO Toolkit UI does, you can do over plain HTTP JSON — free, no key required (PageSpeed has an optional key). Every endpoint below has a <b>live example</b>: press <b>Run</b> and see the real response from this server.</p>
     <div class="toc">
       <a href="#health">health</a>
+      <a href="#drift">drift</a>
       <a href="#audit">audit</a>
       <a href="#perf">perf</a>
       <a href="#speed">speed</a>
@@ -419,6 +420,33 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
     </div>
   </div>
 
+  <!-- ============ SELF-DRIFT ============ -->
+  <div class="endpoint" id="drift">
+    <h2><span class="method">GET</span><span class="path">/api/drift</span></h2>
+    <p class="desc">Live self-drift check: the running server fetches its own canonical, description, headings, nav links, FAQ JSON-LD, full page text, robots.txt, sitemap.xml, the 404 page and its security headers — and compares them against the repo at <code>raw.githubusercontent.com</code>. Answers “am I still serving what the repo says?” from inside the deployment. Read-only, no parameters.</p>
+    <h3 class="sub">Response</h3>
+    <pre class="shape">200 { "checkedAt": "2026-09-18T04:12:33.101Z", "origin": "https://oz-seo-toolkit.multani-navdeep29.workers.dev",
+      "repo": { "source": "github", "repo": "navi45-pixel/oz-seo-toolkit", "ref": "master", "base": "https://raw.githubusercontent.com/..." },
+      "pages": [ { "route": "/", "liveStatus": 200,
+                  "fingerprint": { "ok": true, "diffs": [] },
+                  "textHash": { "ok": true, "hash": "9f2a…", "chars": 6341 } }, … ],
+      "notFoundPage": { "route": "/(404)", "liveStatus": 404, "fingerprint": { "ok": true, "diffs": [] }, "textHash": { … } },
+      "robots": { "liveStatus": 200, "ok": true, "diffs": [] },
+      "sitemap": { "liveStatus": 200, "ok": true, "diffs": [] },
+      "headers": { "probed": "…/", "ok": true, "missing": [], "different": [], "cacheControl": "public, max-age=0, must-revalidate" },
+      "ok": true }</pre>
+    <div class="note">Verdict semantics: <b>200</b> every dimension matches the repo · <b>503</b> at least one drifted (the JSON names the exact item, e.g. <i>headings differ — item 4: live “h2: Drifted Heading” ≠ repo “h2: List your website — it's free”</i>) · degraded mode (<code>"degraded": true</code>) when raw.githubusercontent.com is unreachable, e.g. in egress-restricted sandboxes. On mismatch, fingerprints localise the change; the full-text similarity percentage distinguishes a stale deploy from a wording tweak.</div>
+    <h3 class="sub">Example</h3>
+    <pre class="shape">curl "http://localhost:3000/api/drift"</pre>
+    <div class="runner">
+      <div class="runner-row">
+        <button class="btn" data-run="drift">Run live self-drift check</button>
+      </div>
+      <div class="status-line" data-status></div>
+      <pre class="output" data-output hidden></pre>
+    </div>
+  </div>
+
   <!-- ============ BACKLINKS GET ============ -->
   <div class="endpoint" id="backlinks-get">
     <h2><span class="method">GET</span><span class="path">/api/backlinks</span></h2>
@@ -561,6 +589,7 @@ const RUNS = {
   'speed-desktop':      (url) => ({ path: '/api/speed?url=' + encodeURIComponent(url || 'example.com') + '&strategy=desktop', note: 'Lighthouse via Google \u2014 30\u201360s+' }),
   'crawl':              (u) => ({ path: '/api/crawl?url=' + encodeURIComponent(u || 'example.com') + '&pages=5&depth=2' }),
   'crawl-small':        () => ({ path: '/api/crawl?url=example.com&pages=2&depth=1' }),
+  'drift':              () => ({ path: '/api/drift', note: 'fetching repo expectations from GitHub \u2014 5\u201320s' }),
   'backlinks':          () => ({ path: '/api/backlinks' }),
   'backlinks-filtered': () => ({ path: '/api/backlinks?state=NSW&category=Blogger' }),
   'backlinks-page2':    () => ({ path: '/api/backlinks?limit=1&offset=1' }),

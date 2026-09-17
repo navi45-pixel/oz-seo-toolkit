@@ -8,6 +8,7 @@ const { probePerformance } = require('./lib/perfprobe');
 const { runCrawl } = require('./lib/crawl');
 const { checkSubmission, memoryStore, clientKey } = require('./lib/ratelimit');
 const { authorize } = require('./lib/admin');
+const { runSelfDrift } = require('./lib/drift.js');
 
 const app = express();
 // A HOST-SET PORT=0 (rare, but seen in some sandboxes) would make the OS pick a
@@ -83,6 +84,14 @@ app.get('/api', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'api.
 
 // ---------- Health (lets the frontend detect "server asleep") ----------
 app.get('/api/health', (_req, res) => res.json({ ok: true, uptime: Math.round(process.uptime()) }));
+
+// ---------- API: live self-drift (is this server still serving the repo's pages?) ----------
+app.get('/api/drift', ah(async (req, res) => {
+  const origin = `${req.protocol}://${req.get('host')}`;
+  const result = await withTimeout(runSelfDrift({ origin }), 45000,
+    'Self-drift check timed out after 45 seconds — GitHub raw was unreachable for too long.');
+  res.status(result.ok ? 200 : 503).json(result);
+}));
 
 // ---------- API: full audit ----------
 app.get('/api/audit', ah(async (req, res) => {

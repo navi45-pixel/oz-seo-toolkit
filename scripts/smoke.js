@@ -213,6 +213,22 @@ async function main() {
     report('GET /api/crawl', false, e.message);
   }
 
+  // 8. Self-drift: the running server must match the repo it shipped from.
+  //    Degraded (repo unreachable) counts as a pass with a note — never a
+  //    false red — but a REAL diff (fingerprint mismatch, header, sitemap)
+  //    must fail the suite.
+  try {
+    const { status, json } = await getJson('/api/drift', 90_000);
+    const degraded = json && json.degraded === true;
+    const ok = json && json.ok === true && status === 200;
+    report('GET /api/drift', ok || degraded,
+      degraded ? 'degraded: repo unreachable (allowed)'
+        : ok ? 'all pages, robots, sitemap, 404 + headers match the repo'
+        : `status ${status}, drift: ${JSON.stringify(json && (json.pages || []).filter((p) => p.fingerprint && !p.fingerprint.ok).map((p) => p.route))}`);
+  } catch (e) {
+    report('GET /api/drift', false, e.message);
+  }
+
   console.log(`\n${results.length - failed}/${results.length} checks passed`);
   if (failed > 0) {
     console.error('SMOKE TEST FAILED');

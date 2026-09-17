@@ -208,6 +208,7 @@ All 25 SEO skill modules from the knowledge base are surfaced on `/skills`:
 Full interactive reference with live examples: **`/api`** on any running instance.
 
 - `GET /api/health` — liveness probe (`{"ok":true}`) used by the UI and `start.sh`
+- `GET /api/drift` — live self-drift check: the running server fingerprints its own pages (title, description, headings, nav, FAQ JSON-LD, full text), 404, robots.txt, sitemap.xml and security headers against the repo on GitHub. `200` clean, `503` with the exact drifting item, `"degraded":true` when GitHub raw is unreachable
 - `GET /api/audit?url=example.com.au` — full audit JSON (groups, scores, drift)
 - `GET /api/perf?url=…` — 3-run TTFB/weight probe (average + best)
 - `GET /api/speed?url=…&strategy=mobile|desktop` — Lighthouse via PSI

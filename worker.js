@@ -22,6 +22,7 @@ import { runCrawl } from './lib/crawl.js';
 import { checkSubmission, clientKey } from './lib/ratelimit.js';
 import { authorize } from './lib/admin.js';
 import { SECURITY_HEADERS, applyCachePolicy } from './lib/security-headers.js';
+import { runSelfDrift } from './lib/drift.js';
 
 const json = (obj, status = 200, extraHeaders = {}) =>
   new Response(JSON.stringify(obj), {
@@ -298,6 +299,10 @@ export default {
         return Response.redirect(url.toString(), 301);
       }
       if (url.pathname === '/api/health') return withSecurityHeaders(json({ ok: true, runtime: 'cloudflare-workers' }));
+      if (url.pathname === '/api/drift') {
+        const result = await runSelfDrift({ origin: url.origin });
+        return withSecurityHeaders(json(result, result.ok ? 200 : 503));
+      }
       if (url.pathname === '/api/audit') return withSecurityHeaders(json(await runAudit(url.searchParams.get('url'))));
       if (url.pathname === '/api/perf') {
         const p = await probePerformance(url.searchParams.get('url'));
