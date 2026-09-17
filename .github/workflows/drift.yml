@@ -4,6 +4,7 @@ name: Drift check (deployed worker vs repo)
 # This job diffs the live workers.dev site against repo-side expectations
 # (scripts/check-drift.js): security headers and cache policy from
 # lib/security-headers.js, the HTTP→HTTPS 301, page/canonical/og:url tags,
+# per-page content fingerprints (title, description, headings, nav, FAQ),
 # robots.txt rules, sitemap <loc>/<lastmod>, and the /api/health contract.
 #
 # It catches: a stale or failed deploy, a Cloudflare dashboard setting

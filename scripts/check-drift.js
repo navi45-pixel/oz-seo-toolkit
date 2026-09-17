@@ -16,6 +16,14 @@
  *   6. sitemap.xml <loc> set + lastmod validity        ← public/sitemap.xml
  *   7. Canonical + og:url on each page                 ← public/*.html
  *   8. /api/health shape                               ← worker.js contract
+ *   9. Content fingerprints per page — title, meta description, every
+ *      h1–h3 heading, the nav links, and the FAQ JSON-LD questions and
+ *      answers                                          ← public/*.html
+ *
+ * The fingerprints catch the last gap: a deploy that ships stale or
+ * hand-edited page files is flagged even when status codes, headers and
+ * canonical tags all still look right, and the diff names WHICH part of
+ * the page drifted (title / description / heading / nav / FAQ).
  *
  * Usage:
  *   node scripts/check-drift.js [BASE_URL]
@@ -28,6 +36,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const ROOT = path.join(__dirname, '..');
 const argv = process.argv.slice(2);
@@ -52,6 +61,74 @@ if (!BASE) {
 const read = (...p) => fs.readFileSync(path.join(ROOT, ...p), 'utf8');
 const pages = fs.readdirSync(path.join(ROOT, 'public')).filter((f) => f.endsWith('.html') && f !== '404.html');
 
+// ---------- content fingerprinting ----------
+
+// Raw-text extraction over the served HTML: strips scripts, styles and tags so
+// whitespace/quoting differences never fire, but any real wording change does.
+// The FAQ JSON-LD is parsed semantically (questions + answers) so minification
+// or @graph reordering cannot false-positive either.
+const sha = (s) => crypto.createHash('sha256').update(s).digest('hex').slice(0, 12);
+const text = (html) => html
+  .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<[^>]+>/g, ' ')
+  .replace(/&nbsp;/gi, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+const truncate = (s) => (s.length > 70 ? s.slice(0, 67) + '…' : s);
+const firstDiff = (a, b) => {
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if (a[i] !== b[i]) return `item ${i}: live ${JSON.stringify(a[i] ?? '(absent)')} ≠ repo ${JSON.stringify(b[i] ?? '(absent)')}`;
+  }
+  return null; // arrays are equal
+};
+
+function fingerprint(html) {
+  const pick = (re) => (html.match(re) || [])[1] || '';
+  const headings = [];
+  for (const m of html.matchAll(/<h([1-3])\b[^>]*>([\s\S]*?)<\/h\1>/gi)) headings.push(`h${m[1]}: ${text(m[2])}`);
+  const nav = [];
+  const navMatch = html.match(/<nav\b[^>]*>([\s\S]*?)<\/nav>/i);
+  if (navMatch) {
+    for (const a of navMatch[1].matchAll(/<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi)) nav.push(`${a[1]} ${text(a[2])}`);
+  }
+  const faq = [];
+  for (const m of html.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)) {
+    try {
+      const data = JSON.parse(m[1]);
+      for (const node of Array.isArray(data) ? data : [data]) {
+        for (const n of Array.isArray(node['@graph']) ? node['@graph'] : [node]) {
+          if (String(n['@type'] || '').toLowerCase() !== 'faqpage') continue;
+          for (const q of n.mainEntity || []) {
+            faq.push(`Q: ${text(String(q.name || ''))}`);
+            faq.push(`A: ${text(String((q.acceptedAnswer || {}).text || ''))}`);
+          }
+        }
+      }
+    } catch {
+      faq.push('(unparseable JSON-LD)');
+    }
+  }
+  return {
+    title: pick(/<title[^>]*>([\s\S]*?)<\/title>/i),
+    description: pick(/<meta\s+name="description"\s+content="([^"]*)"/i),
+    headings,
+    nav,
+    faq,
+  };
+}
+
+// Names which part of the page drifted; empty array = content identical.
+const fingerprintDiffs = (live, want) => {
+  const out = [];
+  if (live.title !== want.title) out.push(`title ${JSON.stringify(truncate(live.title))} ≠ repo ${JSON.stringify(truncate(want.title))}`);
+  if (live.description !== want.description) out.push(`meta description ${JSON.stringify(truncate(live.description))} ≠ repo ${JSON.stringify(truncate(want.description))}`);
+  if (live.headings.join('\n') !== want.headings.join('\n')) out.push(`headings differ — ${firstDiff(live.headings, want.headings)}`);
+  if (live.nav.join('|') !== want.nav.join('|')) out.push(`nav links differ — ${firstDiff(live.nav, want.nav)}`);
+  if (live.faq.join('|') !== want.faq.join('|')) out.push(`FAQ JSON-LD differs — ${firstDiff(live.faq, want.faq)}`);
+  return out;
+};
+
 // ---------- repo-side expectations ----------
 
 let expect;
@@ -70,6 +147,7 @@ const repo = {
   sitemap: read('public', 'sitemap.xml'),
   canonicals: {},
   ogUrls: {},
+  fingerprints: {},
 };
 for (const f of pages) {
   const html = read('public', f);
@@ -77,7 +155,9 @@ for (const f of pages) {
   repo.pages[route] = html;
   repo.canonicals[route] = (html.match(/<link rel="canonical" href="([^"]+)"/) || [])[1] || null;
   repo.ogUrls[route] = (html.match(/<meta property="og:url" content="([^"]+)"/) || [])[1] || null;
+  repo.fingerprints[route] = fingerprint(html);
 }
+repo.fingerprint404 = fingerprint(read('public', '404.html'));
 const repoSitemapLocs = [...repo.sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
 const repoSitemapOrigin = repoSitemapLocs[0] ? new URL(repoSitemapLocs[0]).origin : null;
 const repoSitemapPaths = repoSitemapLocs.map((u) => new URL(u).pathname);
@@ -181,6 +261,29 @@ async function main() {
     if (repo.ogUrls[route] && liveOg !== repo.ogUrls[route]) {
       diff(`og:url ${route}`, `live "${liveOg}" ≠ repo "${repo.ogUrls[route]}"`);
     }
+    // 9. Content fingerprint: which part of the page text drifted, if any.
+    const fpDiffs = fingerprintDiffs(fingerprint(live.text), repo.fingerprints[route]);
+    if (fpDiffs.length) {
+      diff(`content ${route}`, fpDiffs.join('; '));
+    } else {
+      const fp = repo.fingerprints[route];
+      notes.push(`content ${route}: sha ${sha(JSON.stringify(fp))} (${fp.headings.length} headings, ${fp.nav.length} nav links, ${fp.faq.length / 2 || 0} FAQ pairs)`);
+    }
+  }
+
+  // 404 page content — the suggester's routes/questions change with the site,
+  // so a stale 404 would quietly misdirect visitors for months.
+  try {
+    const live404 = await probe('/definitely-not-a-page-drift-fp');
+    if (live404.status === 404) {
+      const fpDiffs = fingerprintDiffs(fingerprint(live404.text), repo.fingerprint404);
+      if (fpDiffs.length) diff('content /404.html', fpDiffs.join('; '));
+      else notes.push('content /404.html: sha ' + sha(JSON.stringify(repo.fingerprint404)));
+    } else {
+      notes.push(`content /404.html: skipped (probe returned ${live404.status})`);
+    }
+  } catch (e) {
+    notes.push(`content /404.html: probe skipped (${e.message})`);
   }
 
   // 5. robots.txt: Sitemap line + every Disallow rule present live.
@@ -246,7 +349,7 @@ async function main() {
     console.error('\nRedeploy (npm run deploy) or restore the dashboard setting that changed.');
     process.exit(1);
   }
-  console.log('No drift: the deployed worker matches the repo (headers, cache policy, redirect, pages, canonicals, robots, sitemap, health).');
+  console.log('No drift: the deployed worker matches the repo (headers, cache policy, redirect, pages, canonicals, content fingerprints, robots, sitemap, health).');
   process.exit(0);
 }
 

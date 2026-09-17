@@ -137,7 +137,11 @@ targets a different URL instead of the freshly deployed one). CI runs the same
 dashboard setting, or an undeployed file edit gets caught automatically:
 security headers + cache policy (read back from `lib/security-headers.js`,
 the single copy shared by Node and Workers), the HTTP→HTTPS 301, every page
-returning 200 with its repo canonical/`og:url` tags, robots.txt rules,
+returning 200 with its repo canonical/`og:url` tags, **content
+fingerprints** for every page and the 404 (title, meta description, all
+h1–h3 headings, nav links and FAQPage JSON-LD Q&A — diffs name the exact
+item that changed, so a stale deploy shipping yesterday's FAQ is caught
+even when every header looks right), robots.txt rules,
 sitemap `<loc>`/`<lastmod>` validity and the `/api/health` contract. It
 derives the deploy origin from `public/sitemap.xml` (one source of truth —
 survives the custom-domain swap) or takes an explicit URL:
