@@ -8,6 +8,7 @@ Allow: /
 Disallow: /api/audit
 Disallow: /api/perf
 Disallow: /api/speed
+Disallow: /api/crawl
 
 # Operator-only moderation API — nothing here for crawlers.
 Disallow: /api/admin/

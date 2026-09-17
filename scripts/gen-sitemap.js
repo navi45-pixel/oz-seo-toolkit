@@ -27,6 +27,7 @@ const SITEMAP = path.join(ROOT, 'public', 'sitemap.xml');
 const PAGES = [
   { path: '/', source: 'public/index.html' },
   { path: '/backlinks', source: 'public/backlinks.html' },
+  { path: '/crawl', source: 'public/crawl.html' },
   { path: '/skills', source: 'public/skills.html' },
   { path: '/api', source: 'public/api.html' },
 ];

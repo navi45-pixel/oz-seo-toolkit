@@ -5,6 +5,7 @@ const fs = require('fs');
 const { runAudit } = require('./lib/audit');
 const { runSpeedTest } = require('./lib/speed');
 const { probePerformance } = require('./lib/perfprobe');
+const { runCrawl } = require('./lib/crawl');
 const { checkSubmission, memoryStore, clientKey } = require('./lib/ratelimit');
 const { authorize } = require('./lib/admin');
 
@@ -91,6 +92,7 @@ function validUrl(u) {
 
 // ---------- Pages ----------
 app.get('/backlinks', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'backlinks.html')));
+app.get('/crawl', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'crawl.html')));
 app.get('/skills', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'skills.html')));
 app.get('/api', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'api.html')));
 
@@ -140,6 +142,15 @@ app.get('/api/perf', ah(async (req, res) => {
 app.get('/api/speed', ah(async (req, res) => {
   const strategy = req.query.strategy === 'desktop' ? 'desktop' : 'mobile';
   const result = await runSpeedTest(req.query.url, strategy);
+  res.json(result);
+}));
+
+// ---------- API: site crawl (adaptive, robots-aware) ----------
+app.get('/api/crawl', ah(async (req, res) => {
+  const maxPages = Math.min(25, Math.max(1, Math.floor(Number(req.query.pages)) || 10));
+  const depth = Math.min(5, Math.max(1, Math.floor(Number(req.query.depth)) || 3));
+  const result = await withTimeout(runCrawl(req.query.url, { maxPages, depth }), 50000,
+    'The crawl timed out after 50 seconds — that site is very slow to respond. Try fewer pages.');
   res.json(result);
 }));
 

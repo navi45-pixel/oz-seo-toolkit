@@ -15,7 +15,9 @@
  *   4. Moderation endpoints are never publicly readable
  *   5. robots.txt and sitemap.xml exist and cross-reference each other
  *   6. Unknown pages get the branded HTML 404; unknown API routes get JSON
- *   7. Pages /, /backlinks, /skills, /api all return 200
+ *   7. Pages /, /backlinks, /crawl, /skills, /api all return 200
+ *   8. Site crawler: /api/crawl on example.com returns a scored multi-page
+ *      report with findings and per-page stats (pages 3, depth 2)
  */
 'use strict';
 
@@ -135,7 +137,7 @@ async function main() {
   try {
     const res = await fetch(BASE + '/sitemap.xml', { signal: AbortSignal.timeout(20_000) });
     const text = await res.text();
-    const paths = ['/', '/backlinks', '/skills', '/api'];
+    const paths = ['/', '/backlinks', '/crawl', '/skills', '/api'];
     const missing = paths.filter((p) => !new RegExp(`<loc>[^<]*${p === '/' ? '/' : p}</loc>`).test(text));
     const locCount = (text.match(/<loc>/g) || []).length;
     // Every <url> block must carry a valid, non-future <lastmod> (the sitemap
@@ -146,8 +148,8 @@ async function main() {
       const m = b.match(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/);
       return !m || m[1] > today;
     });
-    report('GET /sitemap.xml', res.status === 200 && locCount === 4 && missing.length === 0 && badDates.length === 0,
-      locCount === 4 && missing.length === 0 && badDates.length === 0
+    report('GET /sitemap.xml', res.status === 200 && locCount === 5 && missing.length === 0 && badDates.length === 0,
+      locCount === 5 && missing.length === 0 && badDates.length === 0
         ? `lists all ${locCount} pages, all lastmod dates valid`
         : `status ${res.status}, ${locCount} urls, missing: ${missing.join(', ') || 'none'}${badDates.length ? `, invalid/missing lastmod: ${badDates.length}` : ''}`);
   } catch (e) {
@@ -179,7 +181,7 @@ async function main() {
   }
 
   // 6. Pages
-  for (const p of ['/', '/backlinks', '/skills', '/api']) {
+  for (const p of ['/', '/backlinks', '/crawl', '/skills', '/api']) {
     try {
       const res = await fetch(BASE + p, { signal: AbortSignal.timeout(20_000) });
       // Consume the body so the socket is released.
@@ -188,6 +190,27 @@ async function main() {
     } catch (e) {
       report(`GET ${p}`, false, e.message);
     }
+  }
+
+  // 7. Site crawler: a small real crawl must return a scored multi-page report
+  //    with findings, per-page stats and honest source/throttle notes.
+  try {
+    const { status, json } = await getJson('/api/crawl?url=example.com&pages=3&depth=2', 90_000);
+    const shapeOk = json && typeof json.score === 'number'
+      && typeof json.url === 'string' && typeof json.host === 'string'
+      && Array.isArray(json.pages) && json.pages.length > 0
+      && json.pages[0].url != null && 'status' in json.pages[0]
+      && Array.isArray(json.findings) && json.findings.every((f) => f.check && f.severity && f.fix && f.accept)
+      && json.stats && typeof json.stats.ok === 'number'
+      && json.source && json.source.robots && json.source.sitemap
+      && json.throttle && typeof json.throttle.initialDelayMs === 'number'
+      && json.limits && json.limits.stopReason;
+    report('GET /api/crawl', status === 200 && shapeOk && json.score >= 0 && json.score <= 100,
+      status === 200 && shapeOk
+        ? `score ${json.score}, ${json.pages.length} page(s), ${json.findings.length} finding(s)`
+        : `status ${status}, shape ${shapeOk ? 'ok' : 'BAD'}`);
+  } catch (e) {
+    report('GET /api/crawl', false, e.message);
   }
 
   console.log(`\n${results.length - failed}/${results.length} checks passed`);

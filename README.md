@@ -24,6 +24,12 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
 - 25 integrated skill modules (13 auto-run in every audit, 9 guided playbooks)
 - `/api` documents every endpoint with live "Run" examples against the server
 
+**Page 4 — Site Crawler (`/crawl`)**
+- Adaptive multi-page crawler: up to 25 pages per crawl (Workers caps: 15), depth-limited BFS seeded from robots.txt + sitemap.xml
+- Polite by design: honours robots.txt (including Crawl-delay), auto-throttles per response speed, backs off with Retry-After, detects challenges/blocks, skips query-string and off-site URLs
+- Prioritised findings, each with captured evidence, a plain-English fix and an acceptance check: missing/duplicate/long titles, missing descriptions & canonicals, duplicate/missing H1s, missing alt text, wrong lang/viewport, error/unreachable pages
+- Same engine on Node and Workers (`lib/crawl.js`, zero new dependencies)
+
 **Page 2 — Free Backlinks & Blogger Directory (`/backlinks`)**
 - Free self-serve listing form (validated, persisted to `data/backlinks.json`; submitter emails are stored for the operator but never exposed via the API or the page)
 - Anti-spam on `POST /api/backlinks`: per-IP limit of 3 successful submissions per rolling hour with a 30s minimum gap — identical logic on Node and Workers (in-memory counters on Node, auto-expiring KV counters on the edge)
@@ -43,8 +49,8 @@ Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for 
   self-canonical tags
 - Crawler files: `public/robots.txt` allows all crawlers (blocking only the
   unbounded audit endpoints and the operator-only `/api/admin/`), points at
-  `public/sitemap.xml`, which lists the four site pages (`/`, `/backlinks`,
-  `/skills`, `/api`) at their canonical workers.dev URLs — served on Node
+  `public/sitemap.xml`, which lists the five site pages (`/`, `/backlinks`,
+  `/crawl`, `/skills`, `/api`) at their canonical workers.dev URLs — served on Node
   (Express static) and Workers (Static Assets) alike. Sitemap `<lastmod>`
   dates are regenerated from git commit history by `npm run gen:sitemap`,
   which `deploy.sh` runs automatically before every deploy (note: deploys
@@ -92,7 +98,7 @@ Use `PORT=8080 npm start` to run on a different port; check `server.log` if anyt
 
 `npm stop` stops the server again — it finds whatever is listening on the port (with the same `PORT` env override), tries a graceful close first, then force-kills if needed. `start.sh` uses the same logic (`stop.sh` holds the shared helpers) to take over a port left busy by a stale instance.
 
-`npm run smoke` runs the smoke tests (`scripts/smoke.js`, dependency-free) against a running instance — defaults to `http://localhost:3000`, or pass any URL: `npm run smoke -- https://<worker>.workers.dev`. The checks: `/api/health`, a real audit, the backlink directory shape, and every page returning 200.
+`npm run smoke` runs the smoke tests (`scripts/smoke.js`, dependency-free) against a running instance — defaults to `http://localhost:3000`, or pass any URL: `npm run smoke -- https://<worker>.workers.dev`. The checks: `/api/health`, a real audit, a small real multi-page crawl, the backlink directory shape, and every page returning 200.
 
 ## Deploy to Cloudflare Workers
 The same audit engine runs on Cloudflare (`worker.js` + `wrangler.toml`).
@@ -125,7 +131,7 @@ URL from wrangler's output, then runs the shared smoke tests against it
 (`--no-smoke` to skip; `BASE_URL=https://... npm run deploy` smoke-tests a
 different URL instead of the freshly deployed one). CI runs the same
 `scripts/smoke.js`, so local, CI, and post-deploy checks cannot drift.
-- Pages (`/`, `/backlinks`, `/skills`, `/api`) are served from `public/` as Static Assets.
+- Pages (`/`, `/backlinks`, `/crawl`, `/skills`, `/api`) are served from `public/` as Static Assets.
 - `/api/audit`, `/api/perf`, `/api/speed`, `/api/health` run the identical engine.
 - The backlink directory persists in a **KV namespace** (`BACKLINKS`, id
   `2b4845a99d4f43729bdc6df50a1fd440`) — the whole directory is one JSON array
@@ -184,6 +190,7 @@ Full interactive reference with live examples: **`/api`** on any running instanc
 - `GET /api/perf?url=…` — 3-run TTFB/weight probe (average + best)
 - `GET /api/speed?url=…&strategy=mobile|desktop` — Lighthouse via PSI
 - `GET|POST /api/backlinks` — directory list / submit listing
+- `GET /api/crawl?url=…&pages=10&depth=3` — multi-page crawl report (score, prioritised findings with evidence/fix/acceptance, per-page stats, throttle notes; Workers caps: 15 pages / 30s budget)
 
 Every API failure returns JSON (`{"error":"…"}`), never an HTML error page.
 Audit requests time out after 50s server-side; the UI aborts at 60s.

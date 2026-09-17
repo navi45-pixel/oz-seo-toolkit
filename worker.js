@@ -18,6 +18,7 @@
 import { runAudit } from './lib/audit.js';
 import { runSpeedTest } from './lib/speed.js';
 import { probePerformance } from './lib/perfprobe.js';
+import { runCrawl } from './lib/crawl.js';
 import { checkSubmission, clientKey } from './lib/ratelimit.js';
 import { authorize } from './lib/admin.js';
 
@@ -329,6 +330,11 @@ export default {
       if (url.pathname === '/api/speed') {
         const strategy = url.searchParams.get('strategy') === 'desktop' ? 'desktop' : 'mobile';
         return withSecurityHeaders(json(await runSpeedTest(url.searchParams.get('url'), strategy)));
+      }
+      if (url.pathname === '/api/crawl') {
+        const maxPages = Math.min(25, Math.max(1, Math.floor(Number(url.searchParams.get('pages'))) || 10));
+        const depth = Math.min(5, Math.max(1, Math.floor(Number(url.searchParams.get('depth'))) || 3));
+        return withSecurityHeaders(json(await runCrawl(url.searchParams.get('url'), { maxPages, depth })));
       }
       if (url.pathname.startsWith('/api/admin/listings')) return withSecurityHeaders(await handleAdmin(request, env, url));
       if (url.pathname.startsWith('/api/backlinks')) return withSecurityHeaders(await handleBacklinks(request, env));

@@ -182,6 +182,7 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
     <nav class="nav-links">
       <a href="/">Free Audit</a>
       <a href="/backlinks">Free Backlinks</a>
+      <a href="/crawl">Site Crawler</a>
       <a href="/skills">Skills Hub</a>
       <a href="/api" class="active">API</a>
     </nav>
@@ -381,6 +382,43 @@ footer.site h4 { color: var(--text); font-size: 13px; margin-bottom: 8px; text-t
     </div>
   </div>
 
+  <!-- ============ CRAWL ============ -->
+  <div class="endpoint" id="crawl">
+    <h2><span class="method">GET</span><span class="path">/api/crawl</span></h2>
+    <p class="desc">Adaptive multi-page site crawler. Seeds from robots.txt + sitemap.xml, then breadth-first with a per-host throttle, Retry-After backoff and block detection. Returns a scored report with prioritised findings — each with captured evidence, a fix and an acceptance check.</p>
+    <h3 class="sub">Parameters</h3>
+    <table class="params">
+      <tr><th>Param</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>url</code></td><td><span class="req">required</span></td><td><p>Site to crawl. Scheme optional; localhost/private IPs rejected.</p></td></tr>
+      <tr><td><code>pages</code></td><td><span class="opt">optional</span></td><td><p>Max pages to fetch. Default <b>10</b>, max <b>25</b> (Workers: <b>15</b>).</p></td></tr>
+      <tr><td><code>depth</code></td><td><span class="opt">optional</span></td><td><p>Max link-follow depth. Default <b>3</b>, max <b>5</b>.</p></td></tr>
+    </table>
+    <h3 class="sub">Response</h3>
+    <pre class="shape">200 { "url": "https://example.com/", "host": "example.com", "fetchedAt": "2026-09-17T12:41:19.254Z",
+      "durationMs": 95, "score": 88,
+      "summary": "Crawled 1 page of example.com in 0.1s (no sitemap found, stopped: site exhausted) — 1 missing descriptions.",
+      "stats": { "fetched": 1, "ok": 1, "redirects": 0, "clientErrors": 0, "serverErrors": 0, "unreachable": 0, "blocked": 0, "avgTtfbMs": 173, "avgWords": 174, ... },
+      "findings": [ { "check": "Missing meta description", "severity": "medium", "evidence": "1 of 1 pages has no meta description (capped at 5 examples).",
+                     "url": "https://example.com/", "fix": "…", "accept": "…" }, … ],
+      "pages": [ { "url": "https://example.com/", "status": 200, "ttfbMs": 173, "sizeKb": 1, "words": 174, "titleLen": 14, "h1": 1, … } ],
+      "source": { "robots": { "found": false, "note": … }, "sitemap": { "found": false, "note": … } },
+      "throttle": { "initialDelayMs": 250, "finalDelayMs": 250, "backoffs": 0 },
+      "limits": { "maxPages": 10, "maxDepth": 3, "crawled": 1, "failed": 0, … , "stopReason": "site-exhausted" } }</pre>
+    <div class="note">Findings severities: <b>high</b> (error/blocked pages, no titles) → <b>medium</b> (missing descriptions, canonicals, H1s, alt text) → <b>low</b> (lang, viewport, robots.txt). Crawl budget: 50s server-side; page sizes over 2&nbsp;MB are not parsed.</div>
+    <h3 class="sub">Example</h3>
+    <pre class="shape">curl "http://localhost:3000/api/crawl?url=example.com&pages=5&depth=2"</pre>
+    <div class="note gold">Heavy endpoint: the crawler visits many pages of the target site politely (throttled). Budget several seconds for real sites; the hard limit is 50s.</div>
+    <div class="runner">
+      <div class="runner-row">
+        <input type="text" data-url value="example.com" placeholder="example.com" aria-label="Site to crawl">
+        <button class="btn" data-run="crawl">Run live crawl</button>
+        <button class="btn secondary" data-run="crawl-small">tiny: pages=2, depth=1</button>
+      </div>
+      <div class="status-line" data-status></div>
+      <pre class="output" data-output hidden></pre>
+    </div>
+  </div>
+
   <!-- ============ BACKLINKS GET ============ -->
   <div class="endpoint" id="backlinks-get">
     <h2><span class="method">GET</span><span class="path">/api/backlinks</span></h2>
@@ -521,6 +559,8 @@ const RUNS = {
   'perf':               (url) => ({ path: '/api/perf?url=' + encodeURIComponent(url || 'example.com'), note: 'probing 3\u00d7' }),
   'speed':              (url) => ({ path: '/api/speed?url=' + encodeURIComponent(url || 'example.com'), note: 'Lighthouse via Google \u2014 30\u201360s+' }),
   'speed-desktop':      (url) => ({ path: '/api/speed?url=' + encodeURIComponent(url || 'example.com') + '&strategy=desktop', note: 'Lighthouse via Google \u2014 30\u201360s+' }),
+  'crawl':              (u) => ({ path: '/api/crawl?url=' + encodeURIComponent(u || 'example.com') + '&pages=5&depth=2' }),
+  'crawl-small':        () => ({ path: '/api/crawl?url=example.com&pages=2&depth=1' }),
   'backlinks':          () => ({ path: '/api/backlinks' }),
   'backlinks-filtered': () => ({ path: '/api/backlinks?state=NSW&category=Blogger' }),
   'backlinks-page2':    () => ({ path: '/api/backlinks?limit=1&offset=1' }),
