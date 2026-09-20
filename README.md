@@ -21,7 +21,7 @@ Paste any URL and get 90+ checks across 8 scored categories:
 Plus: Google SERP snippet preview, overall A–F grade, plain-English fixes for every warning, and a live "recently listed" strip from the backlink directory (3 newest; hidden entirely when the backend is asleep or the directory is empty).
 
 **Page 3 — Skills Hub (`/skills`) & API Reference (`/api`)**
-- 25 integrated skill modules (13 auto-run in every audit, 9 guided playbooks)
+- 26 integrated skill modules (13 auto-run in every audit, 9 guided playbooks)
 - `/api` documents every endpoint with live "Run" examples against the server
 
 **Page 4 — Site Crawler (`/crawl`)**
