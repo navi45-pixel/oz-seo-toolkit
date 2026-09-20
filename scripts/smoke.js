@@ -10,7 +10,7 @@
  * Checks:
  *   1. /api/health answers ok:true
  *   2. GET /api/audit?url=example.com returns a valid scored report
- *      (overall 0-100, exactly 8 scored groups, non-null SEO score)
+ *      (overall 0-100, exactly 9 scored groups, non-null SEO score)
  *   3. Backlinks API shape (no email leak) + pagination + cursor contracts
  *   4. Moderation endpoints are never publicly readable
  *   5. robots.txt and sitemap.xml exist and cross-reference each other
@@ -58,7 +58,7 @@ async function main() {
     const { status, json } = await getJson(`/api/audit?url=${AUDIT_URL}`, 90_000);
     const groups = json && json.groups ? Object.keys(json.groups) : [];
     const overallOk = json && typeof json.overall === 'number' && json.overall >= 0 && json.overall <= 100;
-    const groupsOk = groups.length === 8;
+    const groupsOk = groups.length === 9;
     const seoOk = json && json.groups && json.groups.seo && json.groups.seo.score != null;
     const allOk = status === 200 && overallOk && groupsOk && seoOk;
     report(`GET /api/audit?url=${AUDIT_URL}`, allOk,
