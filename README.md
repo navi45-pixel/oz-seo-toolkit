@@ -191,11 +191,11 @@ or overwritten out-of-band between daily syncs.
 - Without the `BACKLINKS` KV binding, directory endpoints return a
   descriptive 501 JSON error; audits always work.
 
-## Skills Hub — 25 integrated skill modules
-All 25 SEO skill modules from the knowledge base are surfaced on `/skills`:
-- **13 × AUTO** (contribute live checks to every audit): technical, geo, local,
+## Skills Hub — 26 integrated skill modules
+All 26 SEO skill modules from the knowledge base are surfaced on `/skills`:
+- **14 × AUTO** (contribute live checks to every audit): technical, geo, local,
   schema, sitemap, hreflang, images, content, sxo, ecommerce, maps,
-  audit (scoring framework), drift (snapshots).
+  audit (scoring framework), drift (snapshots), ai-readiness (GEO paper scoring).
 - **9 × PLAYBOOK** (guided strategy checklists): cluster, competitor-pages,
   content-brief, plan, flow, page, programmatic, visual/image-gen, google.
 - **3 × special**: `seo-backlinks` (the `/backlinks` page as a PAGE skill),
